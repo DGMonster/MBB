@@ -1,10 +1,10 @@
 # Minimap Button Bag Reborn (MBB Reborn)
 
 ## Summary
-MBB reduces minimap buttons and makes them accessible through a pop out menu.  
-Click the MBB button to expand the menu and display the buttons.
+MBB collects and organizes minimap buttons into a single expandable menu, keeping your minimap clean and uncluttered.  
+Simply click the MBB button to open the menu and access all hidden buttons.
 
-Each button that is collapsed into the menu can be reattached to the minimap with **Ctrl + Right Click**.  
+Each button stored in the menu can be reattached to the minimap using **Ctrl + Right Click**.  
 The MBB button itself can also be detached from the minimap using **Ctrl + Right Click**.
 
 ---
@@ -21,6 +21,7 @@ The MBB button itself can also be detached from the minimap using **Ctrl + Right
 - `/mbb reset all` – resets the MBB settings  
 - `/mbb about` – shows addon version and credits  
 - `/mbb patch` – shows patch compatibility status  
+- `/mbb rescan` – rescans the minimap for missing buttons  
 
 ---
 
@@ -31,13 +32,12 @@ If World of Warcraft receives a new patch and the interface version changes, the
 
 You can manually check the current status at any time using:
 
-
 ---
 
 ## Versioning
 The addon versioning has been modernized.
 
-Current version:
+Current version: 1.0.1
 
 
 The original `4.x` versioning was tied to World of Warcraft: Cataclysm and is no longer used.
@@ -58,9 +58,9 @@ If you want to help translating the addon into your language, feel free to contr
 The past version of MBB lost the author's support, which motivated me to fork the project and continue its development.
 
 From what I can see in the source code, the former maintainers and creators are:
-- karlsnyder  
-- vallantv
-- SkunFly 
+- **karlsnyder**  
+- **vallantv**  
+- **SkunFly**
 
 Many thanks to them for the idea and this awesome project.
 
