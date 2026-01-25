@@ -1,3 +1,5 @@
+-- Default / enUS localization
+
 MBB_TOOLTIP1 = "Ctrl + Right click on a button to reattach it to the minimap.";
 MBB_OPTIONS_HEADER = "Options";
 MBB_OPTIONS_OKBUTTON = "Ok";
@@ -18,3 +20,20 @@ MBB_HELP2 = "  |c00ffffffbuttons|r: Shows a list of all frames in the MBB bar";
 MBB_HELP3 = "  |c00ffffffreset position|r: Resets the position of the MBB minimap button";
 MBB_HELP4 = "  |c00ffffffreset all|r: Resets all options";
 MBB_NOERRORS = "No errors found!";
+
+-- NEW: About / Credits
+MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
+MBB_ABOUT_VERSION = "Version:";
+MBB_ABOUT_BASED_ON = "(based on 4.0.28)";
+MBB_ABOUT_CREDITS_TITLE = "Credits:";
+
+-- NEW: Patch status (/mbb patch)
+MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – Patch Status";
+MBB_PATCH_ADDON_INTERFACE = "Addon Interface Version:";
+MBB_PATCH_WOW_INTERFACE = "Current WoW Interface Version:";
+MBB_PATCH_OK = "Status: Addon is up to date for this WoW patch.";
+MBB_PATCH_OLD = "Status: This addon was built for an older WoW patch. Please check for updates.";
+
+-- NEW: Help lines
+MBB_HELP_ABOUT = "  |c00ffffffabout|r: Shows addon info (version & credits)";
+MBB_HELP_PATCH = "  |c00ffffffpatch|r: Shows patch compatibility status";
