@@ -1,4 +1,18 @@
+# Changelog
+
+## 1.0.0 (based on 4.0.26)
+- Modernized versioning (legacy 4.x scheme was tied to the Cataclysm era)
+- Added `/mbb about` (version + credits output)
+- Added `/mbb patch` (patch compatibility status)
+- Added patch compatibility warning logic
+- Improved localization support (new strings for about/patch/help)
+
+---
+
+# Legacy Changelog (upstream)
+
 Changes
+
 v4.0.4:
  - Fixes for Handynotes and better RU localization
 
