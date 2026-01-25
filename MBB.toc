@@ -12,6 +12,7 @@
 ## Notes-zhCN: 清除迷你地图周围按钮，整合它们至一个弹出菜单中！
 ## Notes-ruRU: Очищает миникарту от кнопок аддонов и держит их в одном меню!
 ## SavedVariablesPerCharacter: MBB_Exclude, MBB_Options
+## IconTexture: Interface\AddOns\MBB\Textures\MiniLogo
 
 localization-enGB.lua
 localization-frFR.lua
