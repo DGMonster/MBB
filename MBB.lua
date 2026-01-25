@@ -8,7 +8,7 @@
 	
 ]]
 
-MBB_Version = "1.0.0";
+MBB_Version = "1.0.1";
 
 MBB_CREDITS = {
     "Original authors:",
@@ -212,7 +212,10 @@ function MBB_SlashHandler(cmd)
 
 	elseif( cmd == "patch" ) then
 		MBB_ShowPatchStatus()
-
+		
+	elseif( cmd == "rescan" ) then
+		MBB_Rescan()
+	
 	elseif( string.sub(cmd, 1, 6) == "debug " ) then
 		local _, _, sFrame = string.find(cmd, "debug (.+)")
 		local hasClick, hasMouseUp, hasMouseDown, hasEnter, hasLeave = MBB_TestFrame(sFrame)
@@ -259,6 +262,7 @@ function MBB_SlashHandler(cmd)
 		-- Localized help additions (fallback to English if not present)
 		MBB_Print(MBB_HELP_ABOUT or "  |c00ffffffabout|r: Shows addon info (version & credits)")
 		MBB_Print(MBB_HELP_PATCH or "  |c00ffffffpatch|r: Shows patch compatibility status")
+		MBB_Print(MBB_HELP_RESCAN or "  |c00ffffffrescan|r: Rescans the minimap for missing buttons")
 	end
 end
 
@@ -801,6 +805,42 @@ function MBB_OnUpdate(elapsed)
 	end
 end
 
+function MBB_Rescan()
+	-- Avoid protected actions / taint issues during combat
+	if( InCombatLockdown and InCombatLockdown() ) then
+		MBB_Print("MBB: Can't rescan during combat.")
+		return
+	end
+
+	local added = 0
+	local children = { Minimap:GetChildren() }
+
+	for _, child in ipairs(children) do
+		local name = child:GetName()
+		if( name and not child.oshow ) then
+			-- Same detection logic as the periodic scan
+			if( (child:HasScript("OnClick") and not MBB_IsKnownButton(name, 3)) or MBB_isButtonToBeIncluded(name) ) then
+				MBB_PrepareButton(name)
+
+				-- Add only if not excluded and not already in bar
+				if( not MBB_IsInArray(MBB_Exclude, name) and not MBB_IsInArray(MBB_Buttons, name) ) then
+					MBB_AddButton(name)
+					added = added + 1
+				end
+			end
+		end
+	end
+
+	MBB_SetPositions()
+
+	-- Chat feedback (localized if available)
+	if( MBB_RESCAN_DONE ) then
+		MBB_Print(string.format(MBB_RESCAN_DONE, added))
+	else
+		MBB_Print("MBB: Rescan complete. Found " .. added .. " new minimap button(s).")
+	end
+end
+
 function MBB_ResetButtonPosition()
 	MBB_Options.AttachToMinimap = MBB_DefaultOptions.AttachToMinimap;
 	MBB_Options.ButtonPos = MBB_DefaultOptions.ButtonPos;
@@ -1090,5 +1130,22 @@ patchWarningFrame:SetScript("OnEvent", function()
             MBB_InterfaceVersion ..
             "). If you experience issues after this patch, please check for an update on CurseForge.|r"
         )
+    end
+end)
+
+local firstRunFrame = CreateFrame("Frame")
+firstRunFrame:RegisterEvent("PLAYER_LOGIN")
+firstRunFrame:SetScript("OnEvent", function()
+	-- First run only
+	if not MBB_FirstRun then
+		MBB_FirstRun = true
+
+		-- Count collected buttons
+		local count = #MBB_Buttons
+
+		MBB_Print(MBB_FIRST_RUN_TITLE or "MinimapButtonBag Reborn loaded.")
+        MBB_Print(string.format(MBB_FIRST_RUN_COUNT or "Collected %d minimap buttons.", count))
+        MBB_Print(MBB_FIRST_RUN_HELP or "Type /mbb to see available commands.")
+        MBB_Print(MBB_FIRST_RUN_RESCAN or "Use /mbb rescan if buttons are missing.")
     end
 end)
