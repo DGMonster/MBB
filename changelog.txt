@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.0.1
+- New command: `/mbb rescan` to recover missing minimap buttons
+- Improved detection of minimap buttons after reloads or addon changes
+- Fixed several localization issues
+- Added missing translations for new commands
+- General code cleanup and stability improvements
+
 ## 1.0.0 (based on 4.0.26)
 - Modernized versioning (legacy 4.x scheme was tied to the Cataclysm era)
 - Added `/mbb about` (version + credits output)
