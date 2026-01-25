@@ -20,6 +20,10 @@ MBB_HELP2 = "  |c00ffffffbuttons|r: Shows a list of all frames in the MBB bar";
 MBB_HELP3 = "  |c00ffffffreset position|r: Resets the position of the MBB minimap button";
 MBB_HELP4 = "  |c00ffffffreset all|r: Resets all options";
 MBB_NOERRORS = "No errors found!";
+MBB_FIRST_RUN_TITLE = "MinimapButtonBag Reborn loaded."
+MBB_FIRST_RUN_COUNT = "Collected %d minimap buttons."
+MBB_FIRST_RUN_HELP = "Type /mbb to see available commands."
+MBB_FIRST_RUN_RESCAN = "Use /mbb rescan if buttons are missing."
 
 -- NEW: About / Credits
 MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
@@ -37,3 +41,5 @@ MBB_PATCH_OLD = "Status: This addon was built for an older WoW patch. Please che
 -- NEW: Help lines
 MBB_HELP_ABOUT = "  |c00ffffffabout|r: Shows addon info (version & credits)";
 MBB_HELP_PATCH = "  |c00ffffffpatch|r: Shows patch compatibility status";
+MBB_HELP_RESCAN = "  |c00ffffffrescan|r: Rescans the minimap for missing buttons";
+MBB_RESCAN_DONE = "MBB: Rescan complete. Found %d new minimap button(s).";
