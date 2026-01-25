@@ -1,5 +1,6 @@
 ## Interface: 120000
-## Author: GrazyMonster (former: karlsnyder, vallantv, skunfly)
+## Author: GrazyMonster
+## Credits: Original authors – karlsnyder, vallantv, SkunFly
 ## Contributors: CosmicCleric
 ## Version: 1.0.0 (based on 4.0.28)
 ## Title: MinimapButtonBag-Reborn
