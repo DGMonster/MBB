@@ -10,6 +10,16 @@
 
 MBB_Version = "1.0.0";
 
+MBB_CREDITS = {
+    "Original authors:",
+    "  karlsnyder",
+    "  vallantv",
+    "  SkunFly",
+    "",
+    "Maintained by:",
+    "  GrazyMonster",
+}
+
 -- Setup some variable for debugging.
 MBB_DebugFlag = 0;
 MBB_DebugInfo = {};
@@ -180,79 +190,80 @@ end
 
 function MBB_SlashHandler(cmd)
 	if( cmd == "buttons" ) then
-		MBB_Print("MBB Buttons:");
-		
+		MBB_Print("MBB Buttons:")
+
 		if( #MBB_Buttons > 0 ) then
-			for i,name in ipairs(MBB_Buttons) do
-				MBB_Print("  " .. name);
+			for i, name in ipairs(MBB_Buttons) do
+				MBB_Print("  " .. name)
 			end
 		else
-			MBB_Print("No Minimap buttons are currently stored.");
+			MBB_Print("No Minimap buttons are currently stored.")
 		end
+
+	elseif( cmd == "about" ) then
+		-- Localized About
+		MBB_Print(MBB_ABOUT_TITLE or "MinimapButtonBag Reborn")
+		MBB_Print((MBB_ABOUT_VERSION or "Version:") .. " " .. MBB_Version .. " " .. (MBB_ABOUT_BASED_ON or "(based on 4.0.26)"))
+		MBB_Print("")
+
+		for _, line in ipairs(MBB_CREDITS) do
+			MBB_Print(line)
+		end
+
+	elseif( cmd == "patch" ) then
+		MBB_ShowPatchStatus()
+
 	elseif( string.sub(cmd, 1, 6) == "debug " ) then
-		local iStart, iEnd, sFrame = string.find(cmd, "debug (.+)");
-		
-		local hasClick, hasMouseUp, hasMouseDown, hasEnter, hasLeave = MBB_TestFrame(sFrame);
-		
-		MBB_Debug("Frame: " .. sFrame);
-		if( hasClick ) then
-			MBB_Debug("  has OnClick script");
-		else
-			MBB_Debug("  has no OnClick script");
-		end
-		if( hasMouseUp ) then
-			MBB_Debug("  has OnMouseUp script");
-		else
-			MBB_Debug("  has no OnMouseUp script");
-		end
-		if( hasMouseDown ) then
-			MBB_Debug("  has OnMouseDown script");
-		else
-			MBB_Debug("  has no OnMouseDown script");
-		end
-		if( hasEnter ) then
-			MBB_Debug("  has OnEnter script");
-		else
-			MBB_Debug("  has no OnEnter script");
-		end
-		if( hasLeave ) then
-			MBB_Debug("  has OnLeave script");
-		else
-			MBB_Debug("  has no OnLeave script");
-		end
+		local _, _, sFrame = string.find(cmd, "debug (.+)")
+		local hasClick, hasMouseUp, hasMouseDown, hasEnter, hasLeave = MBB_TestFrame(sFrame)
+
+		MBB_Debug("Frame: " .. sFrame)
+		if( hasClick ) then MBB_Debug("  has OnClick script") else MBB_Debug("  has no OnClick script") end
+		if( hasMouseUp ) then MBB_Debug("  has OnMouseUp script") else MBB_Debug("  has no OnMouseUp script") end
+		if( hasMouseDown ) then MBB_Debug("  has OnMouseDown script") else MBB_Debug("  has no OnMouseDown script") end
+		if( hasEnter ) then MBB_Debug("  has OnEnter script") else MBB_Debug("  has no OnEnter script") end
+		if( hasLeave ) then MBB_Debug("  has OnLeave script") else MBB_Debug("  has no OnLeave script") end
+
 	elseif( cmd == "reset position" ) then
-		-- Reset the main button position.
 		MBB_ResetButtonPosition()
+
 	elseif( cmd == "reset all" ) then
-		MBB_Options = MBB_DefaultOptions;
-		
-		-- Reset the main button position.
+		MBB_Options = MBB_DefaultOptions
 		MBB_ResetButtonPosition()
-		
-		for i=1,table.maxn(MBB_Exclude) do
-			MBB_AddButton(MBB_Exclude[i]);
+
+		for i = 1, table.maxn(MBB_Exclude) do
+			MBB_AddButton(MBB_Exclude[i])
 		end
-		
-		MBB_SetPositions();
+
+		MBB_SetPositions()
+
 	elseif( cmd == "errors" ) then
 		if( table.maxn(MBB_DebugInfo) > 0 ) then
 			for name, arr in pairs(MBB_DebugInfo) do
-				MBB_Print(name);
+				MBB_Print(name)
 				for _, error in pairs(arr) do
-					MBB_Print("  " .. error);
+					MBB_Print("  " .. error)
 				end
 			end
 		else
-			MBB_Print(MBB_NOERRORS);
+			MBB_Print(MBB_NOERRORS)
 		end
+
 	else
-		MBB_Print("MBB v" .. MBB_Version .. ":");
-		MBB_Print(MBB_HELP1);
-		MBB_Print(MBB_HELP2);
-		MBB_Print(MBB_HELP3);
-		MBB_Print(MBB_HELP4);
+		MBB_Print("MBB v" .. MBB_Version .. ":")
+		MBB_Print(MBB_HELP1)
+		MBB_Print(MBB_HELP2)
+		MBB_Print(MBB_HELP3)
+		MBB_Print(MBB_HELP4)
+
+		-- Localized help additions (fallback to English if not present)
+		MBB_Print(MBB_HELP_ABOUT or "  |c00ffffffabout|r: Shows addon info (version & credits)")
+		MBB_Print(MBB_HELP_PATCH or "  |c00ffffffpatch|r: Shows patch compatibility status")
 	end
 end
+
+
+
 
 function MBB_TestFrame(name)
 	local hasClick = false;
@@ -1041,3 +1052,43 @@ function MBB_NotSureIfThisIsNeeded()
 	
 	MBB_SetPositions()
 end
+
+-- Patch compatibility warning
+
+function MBB_ShowPatchStatus()
+	local _, _, _, toc = GetBuildInfo()
+	toc = tonumber(toc)
+
+	MBB_Print(MBB_PATCH_STATUS_TITLE or "MinimapButtonBag Reborn – Patch Status")
+	MBB_Print((MBB_PATCH_ADDON_INTERFACE or "Addon Interface Version:") .. " " .. tostring(MBB_InterfaceVersion))
+
+	if toc then
+		MBB_Print((MBB_PATCH_WOW_INTERFACE or "Current WoW Interface Version:") .. " " .. tostring(toc))
+
+		if toc > MBB_InterfaceVersion then
+			MBB_Print("|cffff5555" .. (MBB_PATCH_OLD or "Status: This addon was built for an older WoW patch. Please check for updates.") .. "|r")
+		else
+			MBB_Print("|cff55ff55" .. (MBB_PATCH_OK or "Status: Addon is up to date for this WoW patch.") .. "|r")
+		end
+	else
+		MBB_Print("Status: Unable to determine WoW build information.")
+	end
+end
+
+
+MBB_InterfaceVersion = 120000
+
+local patchWarningFrame = CreateFrame("Frame")
+patchWarningFrame:RegisterEvent("PLAYER_LOGIN")
+patchWarningFrame:SetScript("OnEvent", function()
+    local _, _, _, toc = GetBuildInfo()
+    toc = tonumber(toc)
+
+    if toc and toc > MBB_InterfaceVersion then
+        DEFAULT_CHAT_FRAME:AddMessage(
+            "|cffff5555MBB: This addon was built for an older WoW patch (" ..
+            MBB_InterfaceVersion ..
+            "). If you experience issues after this patch, please check for an update on CurseForge.|r"
+        )
+    end
+end)
