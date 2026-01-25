@@ -19,6 +19,11 @@ if( GetLocale() == "deDE" ) then
 	MBB_HELP3 = "  |c00ffffffreset position|r: Setzt den MBB Minimap Button an seine ursprüngliche Position";
 	MBB_HELP4 = "  |c00ffffffreset all|r: Setzt alle Einstellungen auf ihre ursprünglichen Werte";
 	MBB_NOERRORS = "Keine Fehler gefunden!";
+	MBB_FIRST_RUN_TITLE = "MinimapButtonBag Reborn geladen."
+    MBB_FIRST_RUN_COUNT = "%d Minimap-Buttons gesammelt."
+    MBB_FIRST_RUN_HELP = "Gib /mbb ein, um alle Befehle zu sehen."
+    MBB_FIRST_RUN_RESCAN = "Nutze /mbb rescan, falls Buttons fehlen."
+
 
 	-- NEW: About / Credits
 	MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
@@ -36,4 +41,6 @@ if( GetLocale() == "deDE" ) then
 	-- NEW: Help lines (optional, if you print them)
 	MBB_HELP_ABOUT = "  |c00ffffffabout|r: Zeigt Addon-Infos (Version & Credits)";
 	MBB_HELP_PATCH = "  |c00ffffffpatch|r: Zeigt Patch-Kompatibilitätsstatus";
+	MBB_HELP_RESCAN = "  |c00ffffffrescan|r: Scannt die Minimap erneut nach fehlenden Buttons";
+    MBB_RESCAN_DONE = "MBB: Rescan abgeschlossen. %d neue Minimap-Buttons gefunden.";
 end
