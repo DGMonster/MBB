@@ -1,16 +1,18 @@
 ## Interface: 120000
 ## Author: GrazyMonster (former: karlsnyder, vallantv, skunfly)
 ## Contributors: CosmicCleric
-## Version: 4.0.29
+## Version: 1.0.0 (based on 4.0.28)
 ## Title: MinimapButtonBag-Reborn
 ## X-Category: Map
 ## X-Curse-Project-ID: 1443534
-## Notes: Cleans up minimap buttons and makes them accessible through a pop out menu!
-## Notes-frFR: Liberez votre minimap de ses boutons et rendez les accessibles avec un menu deroulant!
-## Notes-deDE: Reduziert die Minimap Knöpfe und erlaubt den Zugriff auf diese über ein Menü!
-## Notes-zhTW: 小地圖按鈕整合。
-## Notes-zhCN: 清除迷你地图周围按钮，整合它们至一个弹出菜单中！
-## Notes-ruRU: Очищает миникарту от кнопок аддонов и держит их в одном меню!
+## Notes: Cleans up minimap buttons and makes them accessible through a menu.
+## Notes-deDE: Räumt Minimap-Schaltflächen auf und macht sie über ein Menü zugänglich.
+## Notes-frFR: Nettoie les boutons de la mini-carte et les rend accessibles via un menu.
+## Notes-itIT: Rimuove i pulsanti dalla minimappa e li rende accessibili tramite un menu.
+## Notes-ruRU: Очищает миникарту от кнопок и делает их доступными через меню.
+## Notes-zhCN: 清理小地图按钮，并通过菜单统一管理。
+## Notes-zhTW: 清理小地圖上的按鈕，並透過選單統一管理。
+## Notes-koKR: 미니맵 버튼을 정리하고 메뉴를 통해 접근할 수 있도록 합니다.
 ## SavedVariablesPerCharacter: MBB_Exclude, MBB_Options
 ## IconTexture: Interface\AddOns\MBB\Textures\MiniLogo
 
