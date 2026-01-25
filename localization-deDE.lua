@@ -19,4 +19,21 @@ if( GetLocale() == "deDE" ) then
 	MBB_HELP3 = "  |c00ffffffreset position|r: Setzt den MBB Minimap Button an seine ursprüngliche Position";
 	MBB_HELP4 = "  |c00ffffffreset all|r: Setzt alle Einstellungen auf ihre ursprünglichen Werte";
 	MBB_NOERRORS = "Keine Fehler gefunden!";
+
+	-- NEW: About / Credits
+	MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
+	MBB_ABOUT_VERSION = "Version:";
+	MBB_ABOUT_BASED_ON = "(basierend auf 4.0.26)";
+	MBB_ABOUT_CREDITS_TITLE = "Credits:";
+
+	-- NEW: Patch status (/mbb patch)
+	MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – Patch-Status";
+	MBB_PATCH_ADDON_INTERFACE = "Addon Interface-Version:";
+	MBB_PATCH_WOW_INTERFACE = "Aktuelle WoW Interface-Version:";
+	MBB_PATCH_OK = "Status: Addon ist für diesen WoW-Patch aktuell.";
+	MBB_PATCH_OLD = "Status: Dieses Addon wurde für einen älteren WoW-Patch erstellt. Bitte prüfe auf Updates.";
+
+	-- NEW: Help lines (optional, if you print them)
+	MBB_HELP_ABOUT = "  |c00ffffffabout|r: Zeigt Addon-Infos (Version & Credits)";
+	MBB_HELP_PATCH = "  |c00ffffffpatch|r: Zeigt Patch-Kompatibilitätsstatus";
 end
