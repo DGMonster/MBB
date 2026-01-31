@@ -14,7 +14,7 @@
 ## Notes-zhCN: 清理小地图按钮，并通过菜单统一管理。
 ## Notes-zhTW: 清理小地圖上的按鈕，並透過選單統一管理。
 ## Notes-koKR: 미니맵 버튼을 정리하고 메뉴를 통해 접근할 수 있도록 합니다.
-## SavedVariables: MBB_FirstRun
+## SavedVariables: MBB_FirstRun, MBB_DB
 ## SavedVariablesPerCharacter: MBB_Exclude, MBB_Options
 ## IconTexture: Interface\AddOns\MBB\Textures\MiniLogo
 
