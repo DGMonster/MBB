@@ -43,4 +43,9 @@ if( GetLocale() == "deDE" ) then
 	MBB_HELP_PATCH = "  |c00ffffffpatch|r: Zeigt Patch-Kompatibilitätsstatus";
 	MBB_HELP_RESCAN = "  |c00ffffffrescan|r: Scannt die Minimap erneut nach fehlenden Buttons";
     MBB_RESCAN_DONE = "MBB: Rescan abgeschlossen. %d neue Minimap-Buttons gefunden.";
+	
+	-- Detach / Free move option
+	MBB_OPTIONS_DETACH = "Von der Minimap lösen";
+	MBB_OPTIONS_DETACH_DESC = "Erlaubt es, den MBB-Button frei auf dem Bildschirm zu platzieren.";
+	MBB_OPTIONS_DETACH_COMBAT = "Kann im Kampf nicht geändert werden.";
 end
