@@ -8,7 +8,7 @@
 	
 ]]
 
-MBB_Version = "1.0.1";
+MBB_Version = "1.0.2";
 
 MBB_CREDITS = {
     "Original authors:",
@@ -850,14 +850,39 @@ function MBB_ResetButtonPosition()
 end
 
 function MBB_SetButtonPosition()
-	if( MBB_Options.AttachToMinimap == 1 ) then
-		MBB_MinimapButtonFrame:ClearAllPoints();
-		MBB_MinimapButtonFrame:SetPoint("TOPLEFT", Minimap, "TOPLEFT", MBB_Options.ButtonPos[1], MBB_Options.ButtonPos[2]);
-	else
-		MBB_MinimapButtonFrame:ClearAllPoints();
-		MBB_MinimapButtonFrame:SetPoint(MBB_Options.DetachedButtonPos, UIParent, MBB_Options.DetachedButtonPos, MBB_Options.ButtonPos[1], MBB_Options.ButtonPos[2]);
-	end
+    if (MBB_Options.AttachToMinimap == 1) then
+        MBB_MinimapButtonFrame:ClearAllPoints();
+        MBB_MinimapButtonFrame:SetParent(Minimap);
+        MBB_MinimapButtonFrame:SetMovable(false);
+        MBB_MinimapButtonFrame:SetPoint("TOPLEFT", Minimap, "TOPLEFT", MBB_Options.ButtonPos[1], MBB_Options.ButtonPos[2]);
+    else
+        -- Detached: always keep it on-screen and default to center if anything looks wrong
+        MBB_MinimapButtonFrame:ClearAllPoints();
+        MBB_MinimapButtonFrame:SetParent(UIParent);
+        MBB_MinimapButtonFrame:SetClampedToScreen(true);
+        MBB_MinimapButtonFrame:SetMovable(true);
+
+        if (not MBB_Options.DetachedButtonPos) then
+            MBB_Options.DetachedButtonPos = "CENTER";
+        end
+        if (not MBB_Options.ButtonPos) then
+            MBB_Options.ButtonPos = { 0, 0 };
+        end
+
+        local x = tonumber(MBB_Options.ButtonPos[1]) or 0;
+        local y = tonumber(MBB_Options.ButtonPos[2]) or 0;
+
+        -- If values are insane (can happen across resolutions/UI scale), reset to center
+        if (x > 5000 or x < -5000 or y > 5000 or y < -5000) then
+            x, y = 0, 0;
+            MBB_Options.ButtonPos[1], MBB_Options.ButtonPos[2] = 0, 0;
+            MBB_Options.DetachedButtonPos = "CENTER";
+        end
+
+        MBB_MinimapButtonFrame:SetPoint(MBB_Options.DetachedButtonPos, UIParent, MBB_Options.DetachedButtonPos, x, y);
+    end
 end
+
 
 function MBB_RadioButton_OnClick(id, alt)
 	local substring;
