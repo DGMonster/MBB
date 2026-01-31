@@ -136,7 +136,7 @@
 	</Button>
 	<Frame name="MBB_OptionsFrame" inherits="BackdropTemplate" hidden="true" parent="UIParent" toplevel="true" movable="true" enableMouse="true">
 		<Size>
-			<AbsDimension x="315" y="290" />
+			<AbsDimension x="315" y="350" />
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER" />
@@ -602,14 +602,135 @@
 					</OnShow>
 				</Scripts>
 			</CheckButton>
-			<Button name="$parent_OKButton" inherits="UIPanelButtonTemplate" text="MBB_OPTIONS_OKBUTTON">
+			
+<CheckButton name="$parent_DetachFromMinimapCheck" inherits="UICheckButtonTemplate">
+	<Anchors>
+		<Anchor point="TOPLEFT" relativeTo="$parent_BottomAltRadio" relativePoint="BOTTOMLEFT">
+			<Offset>
+				<AbsDimension x="0" y="6" />
+			</Offset>
+		</Anchor>
+	</Anchors>
+<Scripts>
+        <OnLoad>
+            self:RegisterEvent("PLAYER_REGEN_DISABLED");
+            self:RegisterEvent("PLAYER_REGEN_ENABLED");
+        </OnLoad>
+        <OnEvent>
+            if event == "PLAYER_REGEN_DISABLED" then
+                self:SetEnabled(false);
+            elseif event == "PLAYER_REGEN_ENABLED" then
+                self:SetEnabled(true);
+            end
+        </OnEvent>
+        <OnShow>
+            -- Text + style
+            local t = _G[self:GetName().."Text"];
+            if t then
+                t:SetText(MBB_OPTIONS_DETACH or "Detach from Minimap");
+                t:SetTextColor(1, 1, 1);
+                t:SetJustifyH("LEFT");
+                t:SetWidth(220);
+                t:SetWordWrap(false);
+            end
+
+            -- Checked state reflects current option (checked = detached)
+            if MBB_Options and MBB_Options.AttachToMinimap ~= nil then
+                self:SetChecked(MBB_Options.AttachToMinimap == 0);
+            end
+
+            -- Disable in combat
+            if InCombatLockdown and InCombatLockdown() then
+                self:SetEnabled(false);
+            end
+        </OnShow>
+
+        <OnClick>
+            -- Block changes during combat
+            if InCombatLockdown and InCombatLockdown() then
+                if MBB_Options and MBB_Options.AttachToMinimap ~= nil then
+                    self:SetChecked(MBB_Options.AttachToMinimap == 0);
+                end
+                return;
+            end
+
+            if not MBB_Options then return end
+
+            if self:GetChecked() then
+                -- Detach
+                MBB_Options.AttachToMinimap = 0;
+                MBB_Options.ButtonPos = {0, 0};
+                MBB_Options.DetachedButtonPos = "CENTER";
+                if not MBB_Options.DetachedButtonPos and MBB_DefaultOptions then
+                    MBB_Options.DetachedButtonPos = MBB_DefaultOptions.DetachedButtonPos;
+                end
+            else
+                -- Attach
+                MBB_Options.AttachToMinimap = 1;
+                if MBB_DefaultOptions then
+                    MBB_Options.ButtonPos = MBB_DefaultOptions.ButtonPos;
+                end
+            end
+
+            if MBB_SetButtonPosition then
+                MBB_SetButtonPosition();
+            end
+        </OnClick>
+
+        
+
+        
+
+        <OnEnter>
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            GameTooltip:SetText(MBB_OPTIONS_DETACH or "Detach from Minimap", 1, 1, 1);
+            GameTooltip:AddLine(MBB_OPTIONS_DETACH_DESC or "Allows the MBB button to be freely moved on the screen.", nil, nil, nil, true);
+            if InCombatLockdown and InCombatLockdown() then
+                GameTooltip:AddLine(MBB_OPTIONS_DETACH_COMBAT or "Cannot be changed during combat.", 1, 0.3, 0.3, true);
+            end
+            GameTooltip:Show();
+        </OnEnter>
+        <OnLeave>
+            GameTooltip:Hide();
+        </OnLeave>
+    </Scripts>
+    
+
+    
+    <Scripts>
+        <OnLoad>
+            self:RegisterEvent("PLAYER_REGEN_DISABLED");
+            self:RegisterEvent("PLAYER_REGEN_ENABLED");
+        </OnLoad>
+        <OnEvent>
+            if event == "PLAYER_REGEN_DISABLED" then
+                self:SetEnabled(false);
+            elseif event == "PLAYER_REGEN_ENABLED" then
+                self:SetEnabled(true);
+            end
+        </OnEvent>
+        <OnEnter>
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            GameTooltip:SetText(MBB_OPTIONS_DETACH or "Detach from Minimap", 1, 1, 1);
+            GameTooltip:AddLine(MBB_OPTIONS_DETACH_DESC or "Allows the MBB button to be freely moved on the screen.", nil, nil, nil, true);
+            if InCombatLockdown and InCombatLockdown() then
+                GameTooltip:AddLine(MBB_OPTIONS_DETACH_COMBAT or "Cannot be changed during combat.", 1, 0.3, 0.3, true);
+            end
+            GameTooltip:Show();
+        </OnEnter>
+        <OnLeave>
+            GameTooltip:Hide();
+        </OnLeave>
+    </Scripts>
+</CheckButton>
+<Button name="$parent_OKButton" inherits="UIPanelButtonTemplate" text="MBB_OPTIONS_OKBUTTON">
 				<Size>
 					<AbsDimension x="125" y="21" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="-75" y="-245" />
+							<AbsDimension x="-75" y="-305" />
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -649,7 +770,7 @@
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="75" y="-245" />
+							<AbsDimension x="75" y="-305" />
 						</Offset>
 					</Anchor>
 				</Anchors>
