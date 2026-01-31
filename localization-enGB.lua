@@ -25,6 +25,7 @@ MBB_FIRST_RUN_COUNT = "Collected %d minimap buttons."
 MBB_FIRST_RUN_HELP = "Type /mbb to see available commands."
 MBB_FIRST_RUN_RESCAN = "Use /mbb rescan if buttons are missing."
 
+
 -- NEW: About / Credits
 MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 MBB_ABOUT_VERSION = "Version:";
@@ -43,3 +44,8 @@ MBB_HELP_ABOUT = "  |c00ffffffabout|r: Shows addon info (version & credits)";
 MBB_HELP_PATCH = "  |c00ffffffpatch|r: Shows patch compatibility status";
 MBB_HELP_RESCAN = "  |c00ffffffrescan|r: Rescans the minimap for missing buttons";
 MBB_RESCAN_DONE = "MBB: Rescan complete. Found %d new minimap button(s).";
+
+-- Detach / Free move option
+MBB_OPTIONS_DETACH = "Detach from Minimap";
+MBB_OPTIONS_DETACH_DESC = "Allows the MBB button to be freely moved on the screen.";
+MBB_OPTIONS_DETACH_COMBAT = "Cannot be changed during combat.";
