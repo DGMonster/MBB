@@ -8,7 +8,7 @@
 	
 ]]
 
-MBB_Version = "1.0.2";
+MBB_Version = "1.0.3";
 
 MBB_CREDITS = {
     "Original authors:",
@@ -1141,7 +1141,7 @@ function MBB_ShowPatchStatus()
 end
 
 
-MBB_InterfaceVersion = 120000
+MBB_InterfaceVersion = 120001
 
 local patchWarningFrame = CreateFrame("Frame")
 patchWarningFrame:RegisterEvent("PLAYER_LOGIN")
