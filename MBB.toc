@@ -1,4 +1,4 @@
-## Interface: 120001
+## Interface: 120001, 120000, 50503, 20505, 11508
 ## Author: GrazyMonster
 ## Credits: Original authors – karlsnyder, vallantv, SkunFly
 ## Contributors: CosmicCleric
