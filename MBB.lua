@@ -1141,7 +1141,7 @@ function MBB_ShowPatchStatus()
 end
 
 
-MBB_InterfaceVersion = 120001
+MBB_InterfaceVersion = 20505
 
 local patchWarningFrame = CreateFrame("Frame")
 patchWarningFrame:RegisterEvent("PLAYER_LOGIN")
@@ -1174,3 +1174,39 @@ firstRunFrame:SetScript("OnEvent", function()
         MBB_Print(MBB_FIRST_RUN_RESCAN or "Use /mbb rescan if buttons are missing.")
     end
 end)
+-- TBC-only delayed rescan to catch late-registered minimap buttons
+local function MBB_IsTBC()
+    local _, _, _, interface = GetBuildInfo()
+    interface = tonumber(interface) or 0
+    return interface >= 20501 and interface < 30000
+end
+
+local function MBB_SafeScan()
+    -- In this addon the scan function is MBB_Rescan()
+    if type(MBB_Rescan) == "function" then
+        MBB_Rescan()
+    end
+end
+
+local function MBB_ScheduleTBCRescans()
+    if not MBB_IsTBC() then return end
+    if not C_Timer or not C_Timer.After then return end
+
+    -- 1) normaler Scan (falls du den schon woanders machst, kannst du diese Zeile entfernen)
+    MBB_SafeScan()
+
+    -- 2) delayed Scan (fängt die meisten Fälle ab)
+    C_Timer.After(1.5, MBB_SafeScan)
+
+    -- 3) optionaler "Spätzünder"-Scan für sehr viele Addons / langsame Logins
+    C_Timer.After(4.0, MBB_SafeScan)
+end
+
+-- Hook an Login (einmalig)
+do
+    local f = CreateFrame("Frame")
+    f:RegisterEvent("PLAYER_LOGIN")
+    f:SetScript("OnEvent", function()
+        MBB_ScheduleTBCRescans()
+    end)
+end
