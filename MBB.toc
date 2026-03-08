@@ -2,7 +2,7 @@
 ## Author: GrazyMonster
 ## Credits: Original authors – karlsnyder, vallantv, SkunFly
 ## Contributors: CosmicCleric
-## Version: 1.0.3 (based on 4.0.26)
+## Version: @project-version@ (based on 4.0.26)
 ## Title: MinimapButtonBag-Reborn
 ## X-Category: Map
 ## X-Curse-Project-ID: 1443534
