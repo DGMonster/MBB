@@ -8,7 +8,7 @@
 	
 ]]
 
-MBB_Version = "1.0.3";
+MBB_Version = @project-version@;
 
 MBB_CREDITS = {
     "Original authors:",
