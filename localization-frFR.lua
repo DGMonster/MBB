@@ -13,7 +13,8 @@ if( GetLocale() == "frFR" ) then
 	MBB_OPTIONS_EXPANSIONBOTTOM = "Bas";
 	MBB_OPTIONS_MAXBUTTONSLABEL = "Max Boutons/Ligne:";
 	MBB_OPTIONS_MAXBUTTONSINFO = "(0=infini)";
-	MBB_OPTIONS_ALTEXPANSIONLABEL = "Alt. Etendre a:";
+	MBB_OPTIONS_ALTEXPANSIONLABEL = "Ligne suivante :";
+	MBB_OPTIONS_BUTTONSCALE = "Taille des boutons :";
 	MBB_HELP1 = "Type \"/mmbb <cmd>\" ou <cmd> est l'un des suivants:";
 	MBB_HELP2 = "  |c00ffffffbuttons|r: Affiche la liste de tous les boutons de la barre MBB";
 	MBB_HELP3 = "  |c00ffffffreset position|r: Reinitialiser la position du bouton MBB";
