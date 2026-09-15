@@ -30,7 +30,7 @@ MBB_FIRST_RUN_RESCAN = "如果有按鈕遺漏，請使用 /mbb rescan。"
 
 MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 MBB_ABOUT_VERSION = "版本：";
-MBB_ABOUT_BASED_ON = "（基於 4.0.28）";
+MBB_ABOUT_BASED_ON = "（基於 4.0.26）";
 MBB_ABOUT_CREDITS_TITLE = "致謝：";
 
 MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – 更新狀態";
