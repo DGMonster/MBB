@@ -1,151 +1,71 @@
-# Changelog
+# MinimapButtonBag Reborn v1.0.6
 
-## Version 1.0.4
+## 🇬🇧 English
 
-* Unified Retail, Classic Era, The Burning Crusade Classic and Mists of Pandaria Classic into a single codebase.
-* Added improved multi-client compatibility for easier maintenance across all supported WoW versions.
-* Added automatic version handling for packaged releases.
-* Fixed an issue in TBC Classic where some minimap buttons were not detected automatically after login.
-* Added a delayed automatic rescan for TBC Classic to detect late-loaded minimap buttons.
-* Updated and completed all localization files.
-* Added missing translations for newer MBB Reborn features, including First Run, About, Patch Status, Rescan and Detach from Minimap.
-* Fixed minor localization inconsistencies and encoding issues.
-* Updated the original MBB base version reference to 4.0.28 across localizations.
+### ✨ New
+- Added configurable **button scaling from 75% to 150%**.
+- General MBB settings are now stored **account-wide**.
+- The exclude list remains **character-specific**.
+- Added an **in-game version check** using the WoW addon communication channel.
+- Added localized update notifications when a newer MBB version is detected.
 
+### 🔧 Fixed
+- Fixed **middle mouse button support** for collected minimap buttons.
+- Addons can now correctly receive middle-click actions.
+- Fixed button visibility after an addon hides or disables its own minimap button.
+- Improved Show/Hide handling for collected minimap buttons.
+- Fixed `/mbb reset all` so account-wide settings are reset correctly.
+- Fixed patch/interface detection for the unified multi-version TOC.
 
+### 🎨 UI
+- Improved the wording of the secondary row direction option.
+- Button scaling now applies cleanly to the MBB button and collected addon buttons.
 
-## 1.0.1
-- New command: `/mbb rescan` to recover missing minimap buttons
-- Improved detection of minimap buttons after reloads or addon changes
-- Fixed several localization issues
-- Added missing translations for new commands
-- General code cleanup and stability improvements
+### 🌍 Localization
+- Updated all supported localization files.
+- Added translations for button scaling.
+- Added translations for update notifications.
+- Updated the wording of the secondary row direction setting.
+- All localization files are synchronized again.
 
-## 1.0.0 (based on 4.0.26)
-- Modernized versioning (legacy 4.x scheme was tied to the Cataclysm era)
-- Added `/mbb about` (version + credits output)
-- Added `/mbb patch` (patch compatibility status)
-- Added patch compatibility warning logic
-- Improved localization support (new strings for about/patch/help)
+### 🎮 Supported WoW Versions
+- World of Warcraft Retail
+- WoW Classic Era
+- The Burning Crusade Classic
+- Mists of Pandaria Classic
 
 ---
 
-# Legacy Changelog (upstream)
+## 🇩🇪 Deutsch
 
-Changes
+### ✨ Neu
+- Einstellbare **Button-Skalierung von 75 % bis 150 %** hinzugefügt.
+- Allgemeine MBB-Einstellungen werden jetzt **accountweit** gespeichert.
+- Die Ausschlussliste bleibt weiterhin **charakterspezifisch**.
+- Eine **Ingame-Versionsprüfung** über den WoW-Addon-Kommunikationskanal wurde hinzugefügt.
+- Lokalisierte Update-Hinweise erscheinen, wenn eine neuere MBB-Version erkannt wird.
 
-v4.0.4:
- - Fixes for Handynotes and better RU localization
+### 🔧 Behoben
+- **Mittelklick-Unterstützung** für eingesammelte Minimap-Buttons behoben.
+- Addons können eigene Mittelklick-Funktionen jetzt korrekt ausführen.
+- Sichtbarkeitsprobleme behoben, wenn ein Addon seinen eigenen Minimap-Button ausblendet oder deaktiviert.
+- Show/Hide-Verhalten eingesammelter Minimap-Buttons verbessert.
+- `/mbb reset all` korrigiert, damit accountweite Einstellungen zuverlässig zurückgesetzt werden.
+- Patch-/Interface-Erkennung für die gemeinsame Multi-Version-TOC korrigiert.
 
-v4.0.3:
- - Update for 9.0.
+### 🎨 Oberfläche
+- Bezeichnung der alternativen Reihenrichtung verständlicher formuliert.
+- Die Button-Skalierung wird sauber auf den MBB-Button und eingesammelte Addon-Buttons angewendet.
 
-v4.0.2:
- - Add license. Fix version display.
+### 🌍 Übersetzungen
+- Alle unterstützten Sprachdateien aktualisiert.
+- Übersetzungen für die Button-Skalierung hinzugefügt.
+- Übersetzungen für Update-Hinweise hinzugefügt.
+- Bezeichnung der alternativen Reihenrichtung überarbeitet.
+- Alle Sprachdateien sind wieder vollständig synchronisiert.
 
-v4.0.1:
- - Update for 8.3.
- - Fix for Dugi and Tukui
-
-v4.0:
- - Update for 8.0.
- - Update Russian localization.
-
-v3.03:
- - Update for 7.3.
-
-v3.02:
- - Update for 7.2.
-
-v3.01:
- - Update for 7.1.
-
-v3.00:
- - Update for 7.03.
-
-v2.02:
- - Update for 6.2.
-
-v2.01:
- - Update for 6.1.
-
-v2.00:
- - Update for 6.0.
-
-v1.40:
- - Update for 5.4.
-
-v1.39:
- - Update for 5.3.
-
-v1.38:
- - Update for 5.2.
- - Update to ignore other Add-On's minimap elements.
-
-v1.37:
- - Update for 5.1.
-
-v1.36:
- - Added ignore for Zygor Guides.
-
-v1.35:
- - Added ignore for Gatherer's Archaeology Nodes.
-
-v1.34:
- - Added another Slash Handler.
- - Fix a reset position issue.
- - Add additional buttons to ignore.
- - Drop some explicitly included buttons because they weren't working.
-
-v1.33:
- - Fixed saving button position when detached.
-
-v1.32:
- - Update to ignore other Add-On's minimap elements.
-
-v1.31:
- - Update for patch 5.0.4
-
-v1.20:
- - Update for patch 4.3
-
-v1.13:
- - Update for patch 4.2
-
-v1.12:
- - Elchizen's localisation had bug and forced it to be in French
-
-v1.11:
- - Fixed stack overflow issue
-
-v1.10:
- - replaced getglobals with _G[
- - Fixed saving of position on reload
- - Added French Localisation thanks to Elchizen for providing the data
-
-v1.01:
- - Replaced old Variables_loaded event with Player_login
-
-v1.00:
- - Fixes by Yossa for Patch 4.0.1
-
-v0.50:
- - Fixed a few loose button issues, and child/parent frame issues that were causing stack overflows
-
-v0.51:
- - Changed bar strata to HIGH from LOW to put it in front of things like GRID.
-
-v0.52:
- - Changed TOC for patch 2.3
-
-v0.60:
- - Fixed SecureStateAnchor bug for WotLK
-
-v0.61:
- - Added exclusion for DAGAssist
-
-v0.62:
- - Fixed stack overflow at line 438
-
-v0.63:
- - Move button strata from high to medium
+### 🎮 Unterstützte WoW-Versionen
+- World of Warcraft Retail
+- WoW Classic Era
+- The Burning Crusade Classic
+- Mists of Pandaria Classic
