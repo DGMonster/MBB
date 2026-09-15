@@ -13,7 +13,8 @@ if( GetLocale() == "deDE" ) then
 	MBB_OPTIONS_EXPANSIONBOTTOM = "Unten";
 	MBB_OPTIONS_MAXBUTTONSLABEL = "Max. Knöpfe/Zeile:";
 	MBB_OPTIONS_MAXBUTTONSINFO = "(0=unendlich)";
-	MBB_OPTIONS_ALTEXPANSIONLABEL = "Alt. Ausklappen nach:";
+	MBB_OPTIONS_ALTEXPANSIONLABEL = "Neue Reihe nach:";
+	MBB_OPTIONS_BUTTONSCALE = "Button-Größe:";
 	MBB_HELP1 = "Gib \"/mmbb <cmd>\" ein, wobei <cmd> folgendes sein kann:";
 	MBB_HELP2 = "  |c00ffffffbuttons|r: Zeigt eine Liste aller Frames in der MBB Leiste";
 	MBB_HELP3 = "  |c00ffffffreset position|r: Setzt den MBB Minimap Button an seine ursprüngliche Position";
