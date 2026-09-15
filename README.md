@@ -37,7 +37,7 @@ You can manually check the current status at any time using:
 ## Versioning
 The addon versioning has been modernized.
 
-Current version: 1.0.4
+Current version: 1.0.6
 
 
 The original `4.x` versioning was tied to World of Warcraft: Cataclysm and is no longer used.
