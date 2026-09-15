@@ -8,7 +8,7 @@
 	
 ]]
 
-MBB_Version = "@project-version@" ;
+MBB_Version = "@project-version@";
 
 MBB_CREDITS = {
     "Original authors:",
@@ -1141,7 +1141,26 @@ function MBB_ShowPatchStatus()
 end
 
 
-MBB_InterfaceVersion = 20505
+-- Read the supported Interface version from the active TOC file.
+-- This keeps MBB.lua shared between Retail and Classic clients.
+local function MBB_GetAddonInterfaceVersion()
+    local value
+
+    if C_AddOns and C_AddOns.GetAddOnMetadata then
+        value = C_AddOns.GetAddOnMetadata("MBB", "Interface")
+    elseif GetAddOnMetadata then
+        value = GetAddOnMetadata("MBB", "Interface")
+    end
+
+    -- Interface metadata may contain multiple values; use the first one.
+    if type(value) == "string" then
+        value = value:match("^%s*(%d+)")
+    end
+
+    return tonumber(value) or 0
+end
+
+MBB_InterfaceVersion = MBB_GetAddonInterfaceVersion()
 
 local patchWarningFrame = CreateFrame("Frame")
 patchWarningFrame:RegisterEvent("PLAYER_LOGIN")
