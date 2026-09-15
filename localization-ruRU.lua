@@ -48,4 +48,8 @@ MBB_OPTIONS_DETACH = "Отсоединить от миникарты";
 MBB_OPTIONS_DETACH_DESC = "Позволяет свободно перемещать кнопку MBB по экрану.";
 MBB_OPTIONS_DETACH_COMBAT = "Нельзя изменить во время боя.";
 
+
+	-- Version update notification
+	MBB_UPDATE_AVAILABLE = "MBB: Доступна новая версия: %s (у вас %s). Обновите аддон через CurseForge.";
+
 end
