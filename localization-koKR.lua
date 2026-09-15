@@ -48,4 +48,8 @@ MBB_OPTIONS_DETACH = "미니맵에서 분리";
 MBB_OPTIONS_DETACH_DESC = "MBB 버튼을 화면에서 자유롭게 이동할 수 있습니다.";
 MBB_OPTIONS_DETACH_COMBAT = "전투 중에는 변경할 수 없습니다.";
 
+
+	-- Version update notification
+	MBB_UPDATE_AVAILABLE = "MBB: 새 버전을 사용할 수 있습니다: %s (현재 사용 중: %s). CurseForge에서 업데이트하세요.";
+
 end
