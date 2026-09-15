@@ -30,7 +30,7 @@ MBB_FIRST_RUN_RESCAN = "Используйте /mbb rescan, если некот�
 
 MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 MBB_ABOUT_VERSION = "Версия:";
-MBB_ABOUT_BASED_ON = "(на основе 4.0.28)";
+MBB_ABOUT_BASED_ON = "(на основе 4.0.26)";
 MBB_ABOUT_CREDITS_TITLE = "Авторы:";
 
 MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – Статус патча";
