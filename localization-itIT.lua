@@ -14,7 +14,8 @@ if( GetLocale() == "itIT" ) then
 	MBB_OPTIONS_EXPANSIONBOTTOM = "Sotto";
 	MBB_OPTIONS_MAXBUTTONSLABEL = "Num. Max. di Pulsanti/Riga:";
 	MBB_OPTIONS_MAXBUTTONSINFO = "(0=infinito)";
-	MBB_OPTIONS_ALTEXPANSIONLABEL = "Espandi Alternativo:";
+	MBB_OPTIONS_ALTEXPANSIONLABEL = "Riga successiva:";
+	MBB_OPTIONS_BUTTONSCALE = "Dimensione pulsanti:";
 	MBB_HELP1 = "Scrivi \"/mmbb <cmd>\" dove <cmd> è uno dei seguenti:";
 	MBB_HELP2 = "  |c00ffffffbuttons|r: Mostra una lista di tutti i frames nella barra di MBB";
 	MBB_HELP3 = "  |c00ffffffreset position|r: Reimposta la posizione di MBB sulla minimappa";
