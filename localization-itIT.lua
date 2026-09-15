@@ -30,7 +30,7 @@ if( GetLocale() == "itIT" ) then
 
 	MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 	MBB_ABOUT_VERSION = "Versione:";
-	MBB_ABOUT_BASED_ON = "(basato su 4.0.28)";
+	MBB_ABOUT_BASED_ON = "(basato su 4.0.26)";
 	MBB_ABOUT_CREDITS_TITLE = "Crediti:";
 
 	MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – Stato patch";
