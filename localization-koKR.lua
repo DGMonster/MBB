@@ -30,7 +30,7 @@ MBB_FIRST_RUN_RESCAN = "버튼이 누락된 경우 /mbb rescan을 사용하세�
 
 MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 MBB_ABOUT_VERSION = "버전:";
-MBB_ABOUT_BASED_ON = "(4.0.28 기반)";
+MBB_ABOUT_BASED_ON = "(4.0.26 기반)";
 MBB_ABOUT_CREDITS_TITLE = "제작진:";
 
 MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – 패치 상태";
