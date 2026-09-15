@@ -50,3 +50,6 @@ MBB_RESCAN_DONE = "MBB: Rescan complete. Found %d new minimap button(s).";
 MBB_OPTIONS_DETACH = "Detach from Minimap";
 MBB_OPTIONS_DETACH_DESC = "Allows the MBB button to be freely moved on the screen.";
 MBB_OPTIONS_DETACH_COMBAT = "Cannot be changed during combat.";
+
+-- Version update notification
+MBB_UPDATE_AVAILABLE = "MBB: A newer version is available: %s (you are using %s). Please update via CurseForge.";
