@@ -30,7 +30,7 @@ MBB_FIRST_RUN_RESCAN = "Use /mbb rescan if buttons are missing."
 -- NEW: About / Credits
 MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 MBB_ABOUT_VERSION = "Version:";
-MBB_ABOUT_BASED_ON = "(based on 4.0.28)";
+MBB_ABOUT_BASED_ON = "(based on 4.0.26)";
 MBB_ABOUT_CREDITS_TITLE = "Credits:";
 
 -- NEW: Patch status (/mbb patch)
