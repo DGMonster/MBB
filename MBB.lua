@@ -214,7 +214,7 @@ function MBB_SlashHandler(cmd)
 	elseif( cmd == "about" ) then
 		-- Localized About
 		MBB_Print(MBB_ABOUT_TITLE or "MinimapButtonBag Reborn")
-		MBB_Print((MBB_ABOUT_VERSION or "Version:") .. " " .. MBB_Version .. " " .. (MBB_ABOUT_BASED_ON or "(based on 4.0.28)"))
+		MBB_Print((MBB_ABOUT_VERSION or "Version:") .. " " .. MBB_Version .. " " .. (MBB_ABOUT_BASED_ON or "(based on 4.0.26)"))
 		MBB_Print("")
 
 		for _, line in ipairs(MBB_CREDITS) do
