@@ -8,7 +8,7 @@
 	
 ]]
 
-MBB_Version = "@project-version@";
+MBB_Version = "v1.0.6-dev2";
 
 MBB_CREDITS = {
     "Original authors:",
@@ -40,7 +40,8 @@ MBB_DefaultOptions = {
 	["CollapseTimeout"] = 1,
 	["ExpandDirection"] = 1,
 	["MaxButtonsPerLine"] = 0,
-	["AltExpandDirection"] = 4
+	["AltExpandDirection"] = 4,
+	["ButtonScale"] = 1.0
 };
 
 
@@ -324,18 +325,45 @@ function MBB_TestFrame(name)
 	return hasClick, hasMouseUp, hasMouseDown, hasEnter, hasLeave;
 end
 
-function MBB_OnEvent(self, event, ...)
-	if( MBB_Options ) then
-		for opt,val in pairs(MBB_DefaultOptions) do
-			if( not MBB_Options[opt] ) then
-				MBB_Debug(opt .. " option set to default: " .. tostring(val));
-				MBB_Options[opt] = val;
-			else
-				MBB_Debug(opt .. " option exists: " .. tostring(MBB_Options[opt]));
+local function MBB_CopyOptions(source)
+	local copy = {};
+	for key, value in pairs(source or {}) do
+		if( type(value) == "table" ) then
+			copy[key] = {};
+			for subkey, subvalue in pairs(value) do
+				copy[key][subkey] = subvalue;
 			end
+		else
+			copy[key] = value;
 		end
-	else
-		MBB_Options = MBB_DefaultOptions;
+	end
+	return copy;
+end
+
+function MBB_OnEvent(self, event, ...)
+	-- v1.0.6: migrate the current character's existing settings once, then
+	-- use one account-wide option table for every character.
+	if( not MBB_GlobalOptions ) then
+		if( MBB_Options ) then
+			MBB_GlobalOptions = MBB_CopyOptions(MBB_Options);
+		else
+			MBB_GlobalOptions = MBB_CopyOptions(MBB_DefaultOptions);
+		end
+	end
+
+	MBB_Options = MBB_GlobalOptions;
+
+	for opt,val in pairs(MBB_DefaultOptions) do
+		if( MBB_Options[opt] == nil ) then
+			MBB_Debug(opt .. " option set to default: " .. tostring(val));
+			if( type(val) == "table" ) then
+				MBB_Options[opt] = MBB_CopyOptions(val);
+			else
+				MBB_Options[opt] = val;
+			end
+		else
+			MBB_Debug(opt .. " option exists: " .. tostring(MBB_Options[opt]));
+		end
 	end
 	MBB_SetButtonPosition();
 end
@@ -362,7 +390,7 @@ function MBB_PrepareButton(name)
 	
 	if( buttonframe ) then
 		if( buttonframe.RegisterForClicks ) then
-			buttonframe:RegisterForClicks("LeftButtonDown","RightButtonDown");
+			buttonframe:RegisterForClicks("LeftButtonDown", "RightButtonDown", "MiddleButtonDown");
 		end
 		
 		buttonframe.isvisible = buttonframe:IsVisible();
@@ -424,8 +452,10 @@ function MBB_PrepareButton(name)
 		buttonframe.Hide = function(...)
 			local innerframe = select(1, ...);
 			MBB_Debug("Hiding innerframe: " .. innerframe:GetName());
-			if( innerframe ~= buttonframe ) then
-				innerframe.isvisible = false;
+			-- Respect Hide() calls from the original addon (for example MDT's
+			-- middle-click action) and remove the button from MBB's visible list.
+			innerframe.isvisible = false;
+			if( innerframe.ohide ) then
 				innerframe.ohide(innerframe);
 			end
 			if( not MBB_IsInArray(MBB_Exclude, innerframe:GetName()) ) then
@@ -532,6 +562,7 @@ function MBB_AddButton(name)
 		child.opoint = {"TOP", Minimap, "BOTTOM", 0, 0};
 	end
 	child.osize = {child:GetHeight(),child:GetWidth()};
+	child.oscale = child:GetScale();
 	child.oclearallpoints = child.ClearAllPoints;
 	child.ClearAllPoints = function() end;
 	child.osetpoint = child.SetPoint;
@@ -561,7 +592,8 @@ function MBB_RestoreButton(name)
 	button.oclearallpoints(button);
 	button.osetpoint(button, button.opoint[1], button.opoint[2], button.opoint[3], button.opoint[4], button.opoint[5]);
 	button:SetHeight(button.osize[1]);
-	button:SetWidth(button.osize[1]);
+	button:SetWidth(button.osize[2]);
+	if button.oscale then button:SetScale(button.oscale); end
 	button.ClearAllPoints = button.oclearallpoints;
 	button.SetPoint = button.osetpoint;
 	MBB_Debug("EVENT Restoring Button");
@@ -580,6 +612,7 @@ function MBB_RestoreButton(name)
 end
 
 function MBB_SetPositions()
+	MBB_MinimapButtonFrame:SetScale(MBB_Options.ButtonScale or 1.0);
 	local directions = {
 		[1] = {"RIGHT", "LEFT"},
 		[2] = {"BOTTOM", "TOP"},
@@ -603,6 +636,10 @@ function MBB_SetPositions()
 			positionframe.parentisvisible = true;
 		end
 		if( positionframe.isvisible and positionframe.parentisvisible ) then
+			-- Apply user-selected button scale while preserving each addon button's original scale.
+			local baseScale = positionframe.oscale or 1
+			positionframe:SetScale(baseScale * (MBB_Options.ButtonScale or 1.0));
+
 			local parent;
 			if( parentid==0 ) then
 				parent = MBB_MinimapButtonFrame;
