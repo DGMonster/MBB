@@ -136,7 +136,7 @@
 	</Button>
 	<Frame name="MBB_OptionsFrame" inherits="BackdropTemplate" hidden="true" parent="UIParent" toplevel="true" movable="true" enableMouse="true">
 		<Size>
-			<AbsDimension x="315" y="350" />
+			<AbsDimension x="315" y="390" />
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER" />
@@ -723,6 +723,34 @@
         </OnLeave>
     </Scripts>
 </CheckButton>
+
+<Slider name="$parent_ButtonScaleSlider" inherits="OptionsSliderTemplate" minValue="0.75" maxValue="1.50" valueStep="0.05" defaultValue="1.0" obeyStepOnDrag="true">
+    <Size><AbsDimension x="150" y="17" /></Size>
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent_DetachFromMinimapCheck" relativePoint="BOTTOMLEFT">
+            <Offset><AbsDimension x="0" y="-18" /></Offset>
+        </Anchor>
+    </Anchors>
+    <Scripts>
+        <OnLoad>
+            self:SetMinMaxValues(0.75, 1.50);
+            self:SetValueStep(0.05);
+            if self.SetObeyStepOnDrag then self:SetObeyStepOnDrag(true); end
+            _G[self:GetName().."Low"]:SetText("75%");
+            _G[self:GetName().."High"]:SetText("150%");
+        </OnLoad>
+        <OnShow>
+            self:SetValue((MBB_Options and MBB_Options.ButtonScale) or 1.0);
+        </OnShow>
+        <OnValueChanged>
+            local value = math.floor((self:GetValue() * 100) + 0.5) / 100;
+            local label = _G[self:GetName().."Text"];
+            if label then
+                label:SetText((MBB_OPTIONS_BUTTONSCALE or "Button size:") .. " " .. math.floor(value * 100 + 0.5) .. "%");
+            end
+        </OnValueChanged>
+    </Scripts>
+</Slider>
 <Button name="$parent_OKButton" inherits="UIPanelButtonTemplate" text="MBB_OPTIONS_OKBUTTON">
 				<Size>
 					<AbsDimension x="125" y="21" />
@@ -730,7 +758,7 @@
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="-75" y="-305" />
+							<AbsDimension x="-75" y="-345" />
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -759,6 +787,7 @@
 						elseif( MBB_OptionsFrame_BottomAltRadio:GetChecked() ) then
 							MBB_Options.AltExpandDirection = 4;
 						end
+						MBB_Options.ButtonScale = MBB_OptionsFrame_ButtonScaleSlider:GetValue();
 						MBB_SetPositions();
 					</OnClick>
 				</Scripts>
@@ -770,7 +799,7 @@
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="75" y="-305" />
+							<AbsDimension x="75" y="-345" />
 						</Offset>
 					</Anchor>
 				</Anchors>
