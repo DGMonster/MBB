@@ -3,10 +3,15 @@
 ## Version 1.0.4
 
 * Unified Retail, Classic Era, The Burning Crusade Classic and Mists of Pandaria Classic into a single codebase.
-* Added improved multi-client compatibility.
-* Added automatic version handling for releases.
-* Fixed an issue in TBC Classic where some minimap buttons were not detected after login.
+* Added improved multi-client compatibility for easier maintenance across all supported WoW versions.
+* Added automatic version handling for packaged releases.
+* Fixed an issue in TBC Classic where some minimap buttons were not detected automatically after login.
 * Added a delayed automatic rescan for TBC Classic to detect late-loaded minimap buttons.
+* Updated and completed all localization files.
+* Added missing translations for newer MBB Reborn features, including First Run, About, Patch Status, Rescan and Detach from Minimap.
+* Fixed minor localization inconsistencies and encoding issues.
+* Updated the original MBB base version reference to 4.0.28 across localizations.
+
 
 
 ## 1.0.1
