@@ -37,7 +37,7 @@ You can manually check the current status at any time using:
 ## Versioning
 The addon versioning has been modernized.
 
-Current version: @project-version@
+Current version: [![GitHub Release](https://img.shields.io/github/v/release/DGMonster/MBB)](https://github.com/DGMonster/MBB/releases/latest)
 
 
 The original `4.x` versioning was tied to World of Warcraft: Cataclysm and is no longer used.
