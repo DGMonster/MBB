@@ -49,4 +49,8 @@ if( GetLocale() == "deDE" ) then
 	MBB_OPTIONS_DETACH = "Von der Minimap lösen";
 	MBB_OPTIONS_DETACH_DESC = "Erlaubt es, den MBB-Button frei auf dem Bildschirm zu platzieren.";
 	MBB_OPTIONS_DETACH_COMBAT = "Kann im Kampf nicht geändert werden.";
+
+	-- Version update notification
+	MBB_UPDATE_AVAILABLE = "MBB: Eine neuere Version ist verfügbar: %s (du verwendest %s). Bitte aktualisiere über CurseForge.";
+
 end
