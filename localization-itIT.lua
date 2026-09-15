@@ -48,4 +48,8 @@ if( GetLocale() == "itIT" ) then
 	MBB_OPTIONS_DETACH_DESC = "Consente di spostare liberamente il pulsante MBB sullo schermo.";
 	MBB_OPTIONS_DETACH_COMBAT = "Non può essere modificato durante il combattimento.";
 
+
+	-- Version update notification
+	MBB_UPDATE_AVAILABLE = "MBB: È disponibile una versione più recente: %s (stai usando %s). Aggiorna tramite CurseForge.";
+
 end
