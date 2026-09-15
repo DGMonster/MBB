@@ -21,4 +21,30 @@ MBB_HELP3 = "  |c00ffffffreset position|r: 重置 MBB 在迷你地图上的位�
 MBB_HELP4 = "  |c00ffffffreset all|r: 重置所有设置";
 MBB_NOERRORS = "没有错误产生！";
 
+
+MBB_FIRST_RUN_TITLE = "MinimapButtonBag Reborn 已加载。"
+MBB_FIRST_RUN_COUNT = "已收集 %d 个小地图按钮。"
+MBB_FIRST_RUN_HELP = "输入 /mbb 查看可用命令。"
+MBB_FIRST_RUN_RESCAN = "如果有按钮缺失，请使用 /mbb rescan。"
+
+MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
+MBB_ABOUT_VERSION = "版本：";
+MBB_ABOUT_BASED_ON = "（基于 4.0.28）";
+MBB_ABOUT_CREDITS_TITLE = "鸣谢：";
+
+MBB_PATCH_STATUS_TITLE = "MinimapButtonBag Reborn – 补丁状态";
+MBB_PATCH_ADDON_INTERFACE = "插件接口版本：";
+MBB_PATCH_WOW_INTERFACE = "当前 WoW 接口版本：";
+MBB_PATCH_OK = "状态：插件已适配当前 WoW 补丁。";
+MBB_PATCH_OLD = "状态：此插件为较旧的 WoW 补丁构建，请检查更新。";
+
+MBB_HELP_ABOUT = "  |c00ffffffabout|r: 显示插件信息（版本和鸣谢）";
+MBB_HELP_PATCH = "  |c00ffffffpatch|r: 显示补丁兼容状态";
+MBB_HELP_RESCAN = "  |c00ffffffrescan|r: 重新扫描小地图以查找缺失按钮";
+MBB_RESCAN_DONE = "MBB：重新扫描完成。发现 %d 个新的小地图按钮。";
+
+MBB_OPTIONS_DETACH = "从小地图分离";
+MBB_OPTIONS_DETACH_DESC = "允许在屏幕上自由移动 MBB 按钮。";
+MBB_OPTIONS_DETACH_COMBAT = "战斗中无法更改。";
+
 end
