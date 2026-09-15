@@ -1,5 +1,14 @@
 # Changelog
 
+## Version 1.0.4
+
+* Unified Retail, Classic Era, The Burning Crusade Classic and Mists of Pandaria Classic into a single codebase.
+* Added improved multi-client compatibility.
+* Added automatic version handling for releases.
+* Fixed an issue in TBC Classic where some minimap buttons were not detected after login.
+* Added a delayed automatic rescan for TBC Classic to detect late-loaded minimap buttons.
+
+
 ## 1.0.1
 - New command: `/mbb rescan` to recover missing minimap buttons
 - Improved detection of minimap buttons after reloads or addon changes
