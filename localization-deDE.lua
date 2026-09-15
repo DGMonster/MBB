@@ -28,7 +28,7 @@ if( GetLocale() == "deDE" ) then
 	-- NEW: About / Credits
 	MBB_ABOUT_TITLE = "MinimapButtonBag Reborn";
 	MBB_ABOUT_VERSION = "Version:";
-	MBB_ABOUT_BASED_ON = "(basierend auf 4.0.26)";
+	MBB_ABOUT_BASED_ON = "(basierend auf 4.0.28)";
 	MBB_ABOUT_CREDITS_TITLE = "Credits:";
 
 	-- NEW: Patch status (/mbb patch)
