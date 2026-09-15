@@ -17,8 +17,8 @@ local function MBB_GetMetadata(field)
 	return nil;
 end
 
-local rawVersion = MBB_GetMetadata("Version");
-MBB_Version = (type(rawVersion) == "string" and rawVersion:match("[vV]?%d+%.%d+%.%d+")) or "v1.0.6";
+local rawVersion = MBB_GetMetadata("Version")
+MBB_Version = (type(rawVersion) == "string" and rawVersion:match("[vV]?%d+%.%d+%.%d+")) or "DEV"
 
 MBB_CREDITS = {
     "Original authors:",
