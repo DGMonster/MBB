@@ -8,7 +8,17 @@
 	
 ]]
 
-MBB_Version = "@project-version@";
+local function MBB_GetMetadata(field)
+	if C_AddOns and C_AddOns.GetAddOnMetadata then
+		return C_AddOns.GetAddOnMetadata("MBB", field);
+	elseif GetAddOnMetadata then
+		return GetAddOnMetadata("MBB", field);
+	end
+	return nil;
+end
+
+local rawVersion = MBB_GetMetadata("Version");
+MBB_Version = (type(rawVersion) == "string" and rawVersion:match("[vV]?%d+%.%d+%.%d+")) or "v1.0.6";
 
 MBB_CREDITS = {
     "Original authors:",
@@ -204,7 +214,7 @@ function MBB_SlashHandler(cmd)
 	elseif( cmd == "about" ) then
 		-- Localized About
 		MBB_Print(MBB_ABOUT_TITLE or "MinimapButtonBag Reborn")
-		MBB_Print((MBB_ABOUT_VERSION or "Version:") .. " " .. MBB_Version .. " " .. (MBB_ABOUT_BASED_ON or "(based on 4.0.26)"))
+		MBB_Print((MBB_ABOUT_VERSION or "Version:") .. " " .. MBB_Version .. " " .. (MBB_ABOUT_BASED_ON or "(based on 4.0.28)"))
 		MBB_Print("")
 
 		for _, line in ipairs(MBB_CREDITS) do
@@ -232,7 +242,8 @@ function MBB_SlashHandler(cmd)
 		MBB_ResetButtonPosition()
 
 	elseif( cmd == "reset all" ) then
-		MBB_Options = MBB_DefaultOptions
+		MBB_GlobalOptions = MBB_CopyOptions(MBB_DefaultOptions);
+		MBB_Options = MBB_GlobalOptions;
 		MBB_ResetButtonPosition()
 
 		for i = 1, table.maxn(MBB_Exclude) do
@@ -254,7 +265,7 @@ function MBB_SlashHandler(cmd)
 		end
 
 	else
-		MBB_Print("MBB v" .. MBB_Version .. ":")
+		MBB_Print("MBB " .. MBB_Version .. ":")
 		MBB_Print(MBB_HELP1)
 		MBB_Print(MBB_HELP2)
 		MBB_Print(MBB_HELP3)
@@ -1178,26 +1189,55 @@ function MBB_ShowPatchStatus()
 end
 
 
--- Read the supported Interface version from the active TOC file.
--- This keeps MBB.lua shared between Retail and Classic clients.
-local function MBB_GetAddonInterfaceVersion()
-    local value
-
-    if C_AddOns and C_AddOns.GetAddOnMetadata then
-        value = C_AddOns.GetAddOnMetadata("MBB", "Interface")
-    elseif GetAddOnMetadata then
-        value = GetAddOnMetadata("MBB", "Interface")
-    end
-
-    -- Interface metadata may contain multiple values; use the first one.
-    if type(value) == "string" then
-        value = value:match("^%s*(%d+)")
-    end
-
-    return tonumber(value) or 0
+-- Read the supported Interface versions from the active TOC file and select
+-- the newest entry for the currently running WoW client family.
+local function MBB_GetInterfaceFamily(interface)
+	interface = tonumber(interface) or 0;
+	if interface >= 100000 then
+		return "retail";
+	elseif interface >= 50000 and interface < 60000 then
+		return "mists";
+	elseif interface >= 20000 and interface < 30000 then
+		return "tbc";
+	elseif interface >= 10000 and interface < 20000 then
+		return "classic";
+	end
+	return "other";
 end
 
-MBB_InterfaceVersion = MBB_GetAddonInterfaceVersion()
+local function MBB_GetAddonInterfaceVersion()
+	local value = MBB_GetMetadata("Interface");
+	local _, _, _, current = GetBuildInfo();
+	current = tonumber(current) or 0;
+	local currentFamily = MBB_GetInterfaceFamily(current);
+	local best = 0;
+	local fallback = 0;
+
+	if type(value) == "number" then
+		value = tostring(value);
+	end
+
+	if type(value) == "string" then
+		for token in value:gmatch("%d+") do
+			local interface = tonumber(token) or 0;
+			if fallback == 0 then
+				fallback = interface;
+			end
+
+			if interface == current then
+				return interface;
+			end
+
+			if MBB_GetInterfaceFamily(interface) == currentFamily and interface > best then
+				best = interface;
+			end
+		end
+	end
+
+	return best > 0 and best or fallback;
+end
+
+MBB_InterfaceVersion = MBB_GetAddonInterfaceVersion();
 
 local patchWarningFrame = CreateFrame("Frame")
 patchWarningFrame:RegisterEvent("PLAYER_LOGIN")
@@ -1213,6 +1253,116 @@ patchWarningFrame:SetScript("OnEvent", function()
         )
     end
 end)
+
+-- In-game version exchange. WoW addons cannot query CurseForge directly, so MBB
+-- shares its version through the hidden addon-message channel. If another player
+-- is running a newer MBB release, show one update notice for the session.
+local MBB_VERSION_PREFIX = "MBB_VERSION";
+local MBB_UpdateNotifiedVersion = nil;
+local MBB_LastVersionBroadcast = 0;
+local MBB_RepliedToVersionSender = {};
+
+local function MBB_ParseVersion(version)
+	if type(version) ~= "string" or #version > 64 then return nil; end
+	local major, minor, patch = version:match("[vV]?(%d+)%.(%d+)%.(%d+)");
+	if not major then return nil; end
+	return tonumber(major), tonumber(minor), tonumber(patch);
+end
+
+local function MBB_CompareVersions(left, right)
+	local l1, l2, l3 = MBB_ParseVersion(left);
+	local r1, r2, r3 = MBB_ParseVersion(right);
+	if not l1 or not r1 then return 0; end
+	if l1 ~= r1 then return l1 > r1 and 1 or -1; end
+	if l2 ~= r2 then return l2 > r2 and 1 or -1; end
+	if l3 ~= r3 then return l3 > r3 and 1 or -1; end
+	return 0;
+end
+
+local function MBB_RegisterVersionPrefix()
+	if C_ChatInfo and C_ChatInfo.RegisterAddonMessagePrefix then
+		return C_ChatInfo.RegisterAddonMessagePrefix(MBB_VERSION_PREFIX);
+	elseif RegisterAddonMessagePrefix then
+		return RegisterAddonMessagePrefix(MBB_VERSION_PREFIX);
+	end
+	return false;
+end
+
+local function MBB_SendVersion(channel, target)
+	if not channel or not MBB_ParseVersion(MBB_Version) then return; end
+	if C_ChatInfo and C_ChatInfo.SendAddonMessage then
+		C_ChatInfo.SendAddonMessage(MBB_VERSION_PREFIX, MBB_Version, channel, target);
+	elseif SendAddonMessage then
+		SendAddonMessage(MBB_VERSION_PREFIX, MBB_Version, channel, target);
+	end
+end
+
+local function MBB_BroadcastVersion(force)
+	local now = GetTime and GetTime() or 0;
+	if not force and MBB_LastVersionBroadcast > 0 and (now - MBB_LastVersionBroadcast) < 10 then
+		return;
+	end
+	MBB_LastVersionBroadcast = now;
+
+	if IsInGuild and IsInGuild() then
+		MBB_SendVersion("GUILD");
+	end
+
+	local inInstanceGroup = LE_PARTY_CATEGORY_INSTANCE and IsInGroup and IsInGroup(LE_PARTY_CATEGORY_INSTANCE);
+	if inInstanceGroup then
+		MBB_SendVersion("INSTANCE_CHAT");
+	elseif IsInRaid and IsInRaid() then
+		MBB_SendVersion("RAID");
+	elseif IsInGroup and IsInGroup() then
+		MBB_SendVersion("PARTY");
+	end
+end
+
+local function MBB_ShowUpdateNotice(newVersion)
+	if MBB_UpdateNotifiedVersion and MBB_CompareVersions(newVersion, MBB_UpdateNotifiedVersion) <= 0 then
+		return;
+	end
+	MBB_UpdateNotifiedVersion = newVersion;
+	MBB_Print(string.format(
+		MBB_UPDATE_AVAILABLE or "MBB: A newer version is available: %s (you are using %s). Please update via CurseForge.",
+		newVersion, MBB_Version
+	));
+end
+
+MBB_RegisterVersionPrefix();
+
+local versionFrame = CreateFrame("Frame");
+versionFrame:RegisterEvent("PLAYER_LOGIN");
+versionFrame:RegisterEvent("CHAT_MSG_ADDON");
+versionFrame:RegisterEvent("GROUP_ROSTER_UPDATE");
+versionFrame:SetScript("OnEvent", function(self, event, ...)
+	if event == "PLAYER_LOGIN" then
+		if C_Timer and C_Timer.After then
+			C_Timer.After(5, function() MBB_BroadcastVersion(true); end);
+		else
+			MBB_BroadcastVersion(true);
+		end
+	elseif event == "GROUP_ROSTER_UPDATE" then
+		if C_Timer and C_Timer.After then
+			C_Timer.After(2, function() MBB_BroadcastVersion(false); end);
+		else
+			MBB_BroadcastVersion(false);
+		end
+	elseif event == "CHAT_MSG_ADDON" then
+		local prefix, message, channel, sender = ...;
+		if prefix ~= MBB_VERSION_PREFIX or not MBB_ParseVersion(message) then return; end
+
+		local comparison = MBB_CompareVersions(message, MBB_Version);
+		if comparison > 0 then
+			MBB_ShowUpdateNotice(message);
+		elseif comparison < 0 and sender and not MBB_RepliedToVersionSender[sender] then
+			-- Reply directly so an older client learns about our newer release even
+			-- when our initial guild/group broadcast happened before they logged in.
+			MBB_RepliedToVersionSender[sender] = true;
+			MBB_SendVersion("WHISPER", sender);
+		end
+	end
+end);
 
 local firstRunFrame = CreateFrame("Frame")
 firstRunFrame:RegisterEvent("PLAYER_LOGIN")
