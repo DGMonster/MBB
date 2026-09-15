@@ -48,4 +48,8 @@ MBB_OPTIONS_DETACH = "從小地圖分離";
 MBB_OPTIONS_DETACH_DESC = "允許在畫面上自由移動 MBB 按鈕。";
 MBB_OPTIONS_DETACH_COMBAT = "戰鬥中無法變更。";
 
+
+	-- Version update notification
+	MBB_UPDATE_AVAILABLE = "MBB：有新版本可用：%s（目前使用 %s）。請透過 CurseForge 更新。";
+
 end
