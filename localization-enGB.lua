@@ -53,3 +53,66 @@ MBB_OPTIONS_DETACH_COMBAT = "Cannot be changed during combat.";
 
 -- Version update notification
 MBB_UPDATE_AVAILABLE = "MBB: A newer version is available: %s (you are using %s). Please update via CurseForge.";
+
+-- MBB Reborn 2.0 - Button Manager
+MBB_MANAGER_BUTTON = "Button Manager...";
+MBB_MANAGER_TITLE = "Button Manager";
+MBB_MANAGER_DESC = "Manage known minimap buttons. Checked buttons are collected by MBB.";
+MBB_MANAGER_ENABLED = "In MBB";
+MBB_MANAGER_DISABLED = "On Minimap";
+MBB_MANAGER_MISSING = "Not loaded";
+MBB_MANAGER_RESCAN = "Rescan";
+MBB_MANAGER_CLOSE = "Close";
+MBB_MANAGER_COUNT = "%d known buttons";
+MBB_MANAGER_EMPTY = "No buttons detected yet. Use Rescan.";
+MBB_MANAGER_COMBAT = "Button management is disabled during combat.";
+MBB_MANAGER_COLUMN_BUTTON = "Button";
+MBB_MANAGER_COLUMN_STATUS = "Status";
+MBB_MANAGER_TOOLTIP_INCLUDED = "Checked: this button is collected inside MBB.";
+MBB_MANAGER_TOOLTIP_EXCLUDED = "Unchecked: this button stays on the minimap.";
+MBB_HELP_MANAGER = "  |c00ffffffmanager|r: Opens the minimap button manager";
+
+-- MBB Reborn 2.0 - Button ordering
+MBB_MANAGER_ORDER_HELP = "Drag a row or use the arrows to change the button order.";
+MBB_MANAGER_MOVE_UP = "Move up";
+MBB_MANAGER_MOVE_DOWN = "Move down";
+MBB_MANAGER_RESET_ORDER = "Reset order";
+MBB_MANAGER_RESET_ORDER_DONE = "MBB: Button order reset.";
+MBB_MANAGER_DRAG_HINT = "Drag this row to change its position.";
+
+-- MBB Reborn 2.0 - Positioning
+MBB_OPTIONS_LOCK_POSITION = "Lock position";
+MBB_OPTIONS_LOCK_POSITION_DESC = "Prevents accidentally moving the detached MBB button.";
+MBB_OPTIONS_SNAP_EDGES = "Snap to WoW window edges";
+MBB_OPTIONS_SNAP_EDGES_DESC = "Snaps the detached MBB button to nearby WoW window edges. Note: WoW addons cannot detect the physical boundary between multiple monitors.";
+
+-- MBB Reborn 2.0 - Profiles
+MBB_PROFILE_BUTTON = "Profiles";
+MBB_PROFILE_TITLE = "Profiles";
+MBB_PROFILE_DESC = "Profiles save layout, scale, position and button order. Excluded buttons remain character-specific.";
+MBB_PROFILE_CURRENT = "Current profile:";
+MBB_PROFILE_ACTIVE = "Active";
+MBB_PROFILE_DEFAULT_DISPLAY = "Default";
+MBB_PROFILE_ACTIVATE = "Activate";
+MBB_PROFILE_NEW = "New";
+MBB_PROFILE_DELETE = "Delete";
+MBB_PROFILE_CLOSE = "Close";
+MBB_PROFILE_HINT = "New profiles start as a copy of the current profile.";
+MBB_PROFILE_NEW_PROMPT = "Enter a name for the new profile:";
+MBB_PROFILE_DELETE_PROMPT = "Delete profile '%s'?";
+MBB_PROFILE_APPLIED = "MBB: Profile '%s' activated.";
+MBB_PROFILE_CREATED = "MBB: Profile '%s' created.";
+MBB_PROFILE_DELETED = "MBB: Profile '%s' deleted.";
+MBB_PROFILE_EXISTS = "MBB: A profile named '%s' already exists.";
+MBB_PROFILE_INVALID = "MBB: Please enter a profile name between 1 and 32 characters.";
+MBB_PROFILE_DELETE_DEFAULT = "MBB: The Default profile cannot be deleted.";
+MBB_PROFILE_COMBAT = "MBB: Profiles cannot be changed during combat.";
+MBB_PROFILE_RENAME = "Rename";
+MBB_PROFILE_DUPLICATE = "Duplicate";
+MBB_PROFILE_RENAME_PROMPT = "Enter a new name for profile '%s':";
+MBB_PROFILE_DUPLICATE_PROMPT = "Enter a name for the copy of profile '%s':";
+MBB_PROFILE_COPY_SUFFIX = "Copy";
+MBB_PROFILE_RENAMED = "MBB: Profile '%s' renamed to '%s'.";
+MBB_PROFILE_DUPLICATED = "MBB: Profile '%s' duplicated as '%s'.";
+MBB_PROFILE_RENAME_DEFAULT = "MBB: The Default profile cannot be renamed.";
+MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: Opens the profile manager";
