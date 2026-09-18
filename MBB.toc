@@ -1,8 +1,8 @@
-## Interface: 120100, 120001, 120000, 50504, 50503, 20506, 20505, 11509, 11508
+## Interface: 120100, 120001, 120000, 50504, 50503, 20506, 20505, 11509, 11508, 16001
 ## Author: GrazyMonster
 ## Credits: Original authors – karlsnyder, vallantv, SkunFly
 ## Contributors: CosmicCleric
-## Version: @project-version@ (based on 4.0.26)
+## Version: v2.0.0 (based on 4.0.26)
 ## Title: MinimapButtonBag-Reborn
 ## X-Category: Map
 ## X-Curse-Project-ID: 1443534
