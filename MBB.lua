@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "@project-version@"
+local sourceVersion = "v2.0.0"
 
 -- @project-version@ is replaced only in packaged releases. When the addon is
 -- installed directly from the source tree, do not accidentally read the
@@ -2750,6 +2750,20 @@ local function MBB_GetAddonInterfaceVersion()
 	local value = MBB_GetMetadata("Interface");
 	local _, _, _, current = GetBuildInfo();
 	current = tonumber(current) or 0;
+
+	-- If the current WoW client accepts this addon without marking it outdated,
+	-- use the running client's Interface version directly.
+	-- This also handles WoW Forever, which uses Mainline APIs but its own
+	-- Interface version range (160xx).
+	if current > 0 then
+		if C_AddOns and C_AddOns.IsAddOnLoadable then
+			local loadable, reason = C_AddOns.IsAddOnLoadable("MBB");
+			if loadable then
+				return current;
+			end
+		end
+	end
+
 	local currentFamily = MBB_GetInterfaceFamily(current);
 	local best = 0;
 	local fallback = 0;
@@ -2761,6 +2775,7 @@ local function MBB_GetAddonInterfaceVersion()
 	if type(value) == "string" then
 		for token in value:gmatch("%d+") do
 			local interface = tonumber(token) or 0;
+
 			if fallback == 0 then
 				fallback = interface;
 			end
