@@ -18,7 +18,16 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-MBB_Version = (type(rawVersion) == "string" and rawVersion:match("[vV]?%d+%.%d+%.%d+")) or "DEV"
+local sourceVersion = "v2.0.0"
+
+-- @project-version@ is replaced only in packaged releases. When the addon is
+-- installed directly from the source tree, do not accidentally read the
+-- historical "based on 4.0.26" number as the current MBB version.
+if type(rawVersion) == "string" and not rawVersion:find("@project%-version@") then
+	MBB_Version = rawVersion:match("([vV]?%d+%.%d+%.%d+[%w%.%-]*)") or sourceVersion
+else
+	MBB_Version = sourceVersion
+end
 
 MBB_CREDITS = {
     "Original authors:",
@@ -51,7 +60,10 @@ MBB_DefaultOptions = {
 	["ExpandDirection"] = 1,
 	["MaxButtonsPerLine"] = 0,
 	["AltExpandDirection"] = 4,
-	["ButtonScale"] = 1.0
+	["ButtonScale"] = 1.0,
+	["DetachedButtonLocked"] = 0,
+	["SnapToScreenEdges"] = 0,
+	["OptionsFramePos"] = {"CENTER", "CENTER", 0, 0}
 };
 
 
@@ -224,6 +236,12 @@ function MBB_SlashHandler(cmd)
 	elseif( cmd == "patch" ) then
 		MBB_ShowPatchStatus()
 		
+	elseif( cmd == "manager" ) then
+		MBB_ButtonManager_Toggle()
+
+	elseif( cmd == "profile" or cmd == "profiles" ) then
+		MBB_ProfileManager_Toggle()
+
 	elseif( cmd == "rescan" ) then
 		MBB_Rescan()
 	
@@ -244,7 +262,15 @@ function MBB_SlashHandler(cmd)
 	elseif( cmd == "reset all" ) then
 		MBB_GlobalOptions = MBB_CopyOptions(MBB_DefaultOptions);
 		MBB_Options = MBB_GlobalOptions;
+		if type(MBB_DB) ~= "table" then MBB_DB = {}; end
+		MBB_DB.ButtonOrder = {};
+		MBB_DB.Profiles = nil;
+		MBB_DB.ActiveProfile = nil;
+		MBB_Profile_EnsureStore();
 		MBB_ResetButtonPosition()
+		if MBB_OptionsFrame then
+			MBB_RestoreOptionsFramePosition()
+		end
 
 		for i = 1, table.maxn(MBB_Exclude) do
 			MBB_AddButton(MBB_Exclude[i])
@@ -275,10 +301,1336 @@ function MBB_SlashHandler(cmd)
 		MBB_Print(MBB_HELP_ABOUT or "  |c00ffffffabout|r: Shows addon info (version & credits)")
 		MBB_Print(MBB_HELP_PATCH or "  |c00ffffffpatch|r: Shows patch compatibility status")
 		MBB_Print(MBB_HELP_RESCAN or "  |c00ffffffrescan|r: Rescans the minimap for missing buttons")
+		MBB_Print(MBB_HELP_MANAGER or "  |c00ffffffmanager|r: Opens the minimap button manager")
+		MBB_Print(MBB_HELP_PROFILE or "  |c00ffffffprofiles|r: Opens the profile manager")
 	end
 end
 
 
+
+-- ---------------------------------------------------------------------------
+-- MBB Reborn 2.0 - Button Manager
+-- ---------------------------------------------------------------------------
+-- The manager deliberately uses only long-established WoW UI templates so it
+-- can be shared by Retail and the supported Classic clients.
+
+-- ---------------------------------------------------------------------------
+-- MBB Reborn 2.0 - Profiles
+-- ---------------------------------------------------------------------------
+-- Profiles are account-wide. They store general layout/options and the
+-- collected-button order. The exclude list intentionally remains per character.
+
+local MBB_ButtonOrder_GetStore;
+local MBB_ButtonOrder_ApplyToCollected;
+
+local MBB_PROFILE_DEFAULT_NAME = "Default";
+
+local function MBB_Profile_CopyTable(source)
+    local copy = {};
+    for key, value in pairs(source or {}) do
+        if type(value) == "table" then
+            copy[key] = MBB_Profile_CopyTable(value);
+        else
+            copy[key] = value;
+        end
+    end
+    return copy;
+end
+
+local function MBB_Profile_CopyArray(source)
+    local copy = {};
+    for index, value in ipairs(source or {}) do
+        copy[index] = value;
+    end
+    return copy;
+end
+
+function MBB_Profile_EnsureStore()
+    if type(MBB_DB) ~= "table" then
+        MBB_DB = {};
+    end
+
+    if type(MBB_DB.Profiles) ~= "table" then
+        local initialOptions;
+        if type(MBB_GlobalOptions) == "table" then
+            initialOptions = MBB_Profile_CopyTable(MBB_GlobalOptions);
+        elseif type(MBB_Options) == "table" then
+            initialOptions = MBB_Profile_CopyTable(MBB_Options);
+        else
+            initialOptions = MBB_Profile_CopyTable(MBB_DefaultOptions);
+        end
+
+        MBB_DB.Profiles = {
+            [MBB_PROFILE_DEFAULT_NAME] = {
+                options = initialOptions,
+                buttonOrder = MBB_Profile_CopyArray(MBB_DB.ButtonOrder or {}),
+            },
+        };
+        MBB_DB.ActiveProfile = MBB_PROFILE_DEFAULT_NAME;
+    end
+
+    if type(MBB_DB.Profiles[MBB_PROFILE_DEFAULT_NAME]) ~= "table" then
+        MBB_DB.Profiles[MBB_PROFILE_DEFAULT_NAME] = {
+            options = MBB_Profile_CopyTable(MBB_DefaultOptions),
+            buttonOrder = {},
+        };
+    end
+
+    for _, profile in pairs(MBB_DB.Profiles) do
+        if type(profile.options) ~= "table" then
+            profile.options = MBB_Profile_CopyTable(MBB_DefaultOptions);
+        end
+        if type(profile.buttonOrder) ~= "table" then
+            profile.buttonOrder = {};
+        end
+    end
+
+    if type(MBB_DB.ActiveProfile) ~= "string" or not MBB_DB.Profiles[MBB_DB.ActiveProfile] then
+        MBB_DB.ActiveProfile = MBB_PROFILE_DEFAULT_NAME;
+    end
+end
+
+local function MBB_Profile_GetActiveData()
+    MBB_Profile_EnsureStore();
+    return MBB_DB.Profiles[MBB_DB.ActiveProfile], MBB_DB.ActiveProfile;
+end
+
+local function MBB_Profile_GetDisplayName(name)
+    if name == MBB_PROFILE_DEFAULT_NAME then
+        return MBB_PROFILE_DEFAULT_DISPLAY or "Default";
+    end
+    return tostring(name or "");
+end
+
+function MBB_Profile_GetActiveDisplayName()
+    MBB_Profile_EnsureStore();
+    return MBB_Profile_GetDisplayName(MBB_DB.ActiveProfile);
+end
+
+-- Quick profile selector used directly in the main settings window.
+-- The legacy UIDropDownMenu API is available across all WoW clients supported
+-- by MBB and keeps the selector consistent with Blizzard UI controls.
+function MBB_ProfileDropdown_Refresh()
+    if not MBB_OptionsFrame_ProfileDropDown then return; end
+    MBB_Profile_EnsureStore();
+
+    local displayName = MBB_Profile_GetDisplayName(MBB_DB.ActiveProfile);
+    if UIDropDownMenu_SetText then
+        UIDropDownMenu_SetText(MBB_OptionsFrame_ProfileDropDown, displayName);
+    end
+    if UIDropDownMenu_SetSelectedValue then
+        UIDropDownMenu_SetSelectedValue(MBB_OptionsFrame_ProfileDropDown, MBB_DB.ActiveProfile);
+    end
+
+    local locked = InCombatLockdown and InCombatLockdown();
+    if locked then
+        if UIDropDownMenu_DisableDropDown then UIDropDownMenu_DisableDropDown(MBB_OptionsFrame_ProfileDropDown); end
+    else
+        if UIDropDownMenu_EnableDropDown then UIDropDownMenu_EnableDropDown(MBB_OptionsFrame_ProfileDropDown); end
+    end
+end
+
+function MBB_ProfileDropdown_Initialize(self, level)
+    if level and level ~= 1 then return; end
+    MBB_Profile_EnsureStore();
+    if not UIDropDownMenu_CreateInfo or not UIDropDownMenu_AddButton then return; end
+
+    for _, name in ipairs(MBB_Profile_GetNames()) do
+        local info = UIDropDownMenu_CreateInfo();
+        info.text = MBB_Profile_GetDisplayName(name);
+        info.value = name;
+        info.checked = (name == MBB_DB.ActiveProfile);
+        info.func = function(_, selectedName)
+            if MBB_Profile_Activate(selectedName) then
+                MBB_ProfileDropdown_Refresh();
+            end
+            if CloseDropDownMenus then CloseDropDownMenus(); end
+        end;
+        info.arg1 = name;
+        UIDropDownMenu_AddButton(info, level or 1);
+    end
+end
+
+function MBB_Profile_GetNames()
+    MBB_Profile_EnsureStore();
+    local names = {};
+    for name in pairs(MBB_DB.Profiles) do
+        if name ~= MBB_PROFILE_DEFAULT_NAME then
+            table.insert(names, name);
+        end
+    end
+    table.sort(names, function(a, b)
+        return string.lower(a) < string.lower(b);
+    end);
+    table.insert(names, 1, MBB_PROFILE_DEFAULT_NAME);
+    return names;
+end
+
+local function MBB_Profile_FindNameCaseInsensitive(name)
+    if type(name) ~= "string" then return nil; end
+    local wanted = string.lower(name);
+    for existing in pairs(MBB_DB.Profiles or {}) do
+        if string.lower(existing) == wanted then
+            return existing;
+        end
+    end
+    return nil;
+end
+
+local function MBB_Profile_RefreshOptionsWindow()
+    if MBB_OptionsFrame and MBB_OptionsFrame:IsShown() then
+        -- Existing controls populate themselves in OnShow. Re-showing is the
+        -- safest shared-client way to refresh every radio/slider/edit box.
+        MBB_OptionsFrame:Hide();
+        MBB_OptionsFrame:Show();
+    elseif MBB_ProfileDropdown_Refresh then
+        MBB_ProfileDropdown_Refresh();
+    end
+end
+
+function MBB_Profile_Activate(name, quiet)
+    MBB_Profile_EnsureStore();
+    if type(name) ~= "string" or not MBB_DB.Profiles[name] then return false; end
+
+    if InCombatLockdown and InCombatLockdown() then
+        MBB_Print(MBB_PROFILE_COMBAT or "MBB: Profiles cannot be changed during combat.");
+        return false;
+    end
+
+    local oldProfile = MBB_DB.Profiles[MBB_DB.ActiveProfile];
+    local currentWindowPos = MBB_Options and MBB_Options.OptionsFramePos;
+    if oldProfile and type(MBB_Options) == "table" then
+        oldProfile.options = MBB_Profile_CopyTable(MBB_Options);
+    end
+
+    MBB_DB.ActiveProfile = name;
+    local profile = MBB_DB.Profiles[name];
+    MBB_GlobalOptions = MBB_Profile_CopyTable(profile.options);
+
+    -- The settings-window location is UI chrome, not a gameplay profile
+    -- preference. Keep the current window location while changing profiles.
+    if type(currentWindowPos) == "table" then
+        MBB_GlobalOptions.OptionsFramePos = MBB_Profile_CopyTable(currentWindowPos);
+    end
+
+    for opt, val in pairs(MBB_DefaultOptions) do
+        if MBB_GlobalOptions[opt] == nil then
+            if type(val) == "table" then
+                MBB_GlobalOptions[opt] = MBB_Profile_CopyTable(val);
+            else
+                MBB_GlobalOptions[opt] = val;
+            end
+        end
+    end
+
+    MBB_Options = MBB_GlobalOptions;
+    profile.options = MBB_Options;
+    MBB_DB.ButtonOrder = MBB_Profile_CopyArray(profile.buttonOrder or {});
+
+    if MBB_SetButtonPosition then MBB_SetButtonPosition(); end
+    if MBB_ButtonOrder_ApplyToCollected then MBB_ButtonOrder_ApplyToCollected(); end
+    if MBB_SetPositions then MBB_SetPositions(); end
+    if MBB_ButtonManager_Refresh then MBB_ButtonManager_Refresh(); end
+    if MBB_ProfileManager_Refresh then MBB_ProfileManager_Refresh(); end
+    MBB_Profile_RefreshOptionsWindow();
+
+    if not quiet then
+        MBB_Print(string.format(MBB_PROFILE_APPLIED or "MBB: Profile '%s' activated.", MBB_Profile_GetDisplayName(name)));
+    end
+    return true;
+end
+
+function MBB_Profile_Create(name)
+    MBB_Profile_EnsureStore();
+    name = tostring(name or "");
+    name = name:gsub("^%s+", ""):gsub("%s+$", "");
+
+    if name == "" or #name > 32 then
+        MBB_Print(MBB_PROFILE_INVALID or "MBB: Please enter a profile name between 1 and 32 characters.");
+        return false;
+    end
+    if MBB_Profile_FindNameCaseInsensitive(name) then
+        MBB_Print(string.format(MBB_PROFILE_EXISTS or "MBB: A profile named '%s' already exists.", name));
+        return false;
+    end
+
+    local currentOrder = {};
+    if MBB_ButtonOrder_GetStore then
+        currentOrder = MBB_Profile_CopyArray(MBB_ButtonOrder_GetStore());
+    elseif type(MBB_DB.ButtonOrder) == "table" then
+        currentOrder = MBB_Profile_CopyArray(MBB_DB.ButtonOrder);
+    end
+
+    MBB_DB.Profiles[name] = {
+        options = MBB_Profile_CopyTable(MBB_Options or MBB_DefaultOptions),
+        buttonOrder = currentOrder,
+    };
+
+    MBB_Profile_Activate(name, true);
+    MBB_ProfileManager_SelectedName = name;
+    MBB_Print(string.format(MBB_PROFILE_CREATED or "MBB: Profile '%s' created.", name));
+    if MBB_ProfileManager_Refresh then MBB_ProfileManager_Refresh(); end
+    return true;
+end
+
+function MBB_Profile_Delete(name)
+    MBB_Profile_EnsureStore();
+    if name == MBB_PROFILE_DEFAULT_NAME then
+        MBB_Print(MBB_PROFILE_DELETE_DEFAULT or "MBB: The Default profile cannot be deleted.");
+        return false;
+    end
+    if not MBB_DB.Profiles[name] then return false; end
+
+    if MBB_DB.ActiveProfile == name then
+        if not MBB_Profile_Activate(MBB_PROFILE_DEFAULT_NAME, true) then
+            return false;
+        end
+    end
+
+    MBB_DB.Profiles[name] = nil;
+    MBB_ProfileManager_SelectedName = MBB_DB.ActiveProfile;
+    MBB_Print(string.format(MBB_PROFILE_DELETED or "MBB: Profile '%s' deleted.", name));
+    if MBB_ProfileManager_Refresh then MBB_ProfileManager_Refresh(); end
+    return true;
+end
+
+function MBB_Profile_Rename(oldName, newName)
+    MBB_Profile_EnsureStore();
+    if oldName == MBB_PROFILE_DEFAULT_NAME then
+        MBB_Print(MBB_PROFILE_RENAME_DEFAULT or "MBB: The Default profile cannot be renamed.");
+        return false;
+    end
+    if type(oldName) ~= "string" or not MBB_DB.Profiles[oldName] then return false; end
+
+    newName = tostring(newName or "");
+    newName = newName:gsub("^%s+", ""):gsub("%s+$", "");
+    if newName == "" or #newName > 32 then
+        MBB_Print(MBB_PROFILE_INVALID or "MBB: Please enter a profile name between 1 and 32 characters.");
+        return false;
+    end
+
+    local existing = MBB_Profile_FindNameCaseInsensitive(newName);
+    if existing and existing ~= oldName then
+        MBB_Print(string.format(MBB_PROFILE_EXISTS or "MBB: A profile named '%s' already exists.", newName));
+        return false;
+    end
+
+    if newName == oldName then return true; end
+
+    local profile = MBB_DB.Profiles[oldName];
+    MBB_DB.Profiles[oldName] = nil;
+    MBB_DB.Profiles[newName] = profile;
+
+    if MBB_DB.ActiveProfile == oldName then
+        MBB_DB.ActiveProfile = newName;
+    end
+    MBB_ProfileManager_SelectedName = newName;
+
+    MBB_Print(string.format(MBB_PROFILE_RENAMED or "MBB: Profile '%s' renamed to '%s'.", oldName, newName));
+    if MBB_ProfileManager_Refresh then MBB_ProfileManager_Refresh(); end
+    return true;
+end
+
+function MBB_Profile_Duplicate(sourceName, newName)
+    MBB_Profile_EnsureStore();
+    if type(sourceName) ~= "string" or not MBB_DB.Profiles[sourceName] then return false; end
+
+    newName = tostring(newName or "");
+    newName = newName:gsub("^%s+", ""):gsub("%s+$", "");
+    if newName == "" or #newName > 32 then
+        MBB_Print(MBB_PROFILE_INVALID or "MBB: Please enter a profile name between 1 and 32 characters.");
+        return false;
+    end
+    if MBB_Profile_FindNameCaseInsensitive(newName) then
+        MBB_Print(string.format(MBB_PROFILE_EXISTS or "MBB: A profile named '%s' already exists.", newName));
+        return false;
+    end
+
+    -- Keep the active profile fully in sync before copying it.
+    if sourceName == MBB_DB.ActiveProfile then
+        local source = MBB_DB.Profiles[sourceName];
+        source.options = MBB_Profile_CopyTable(MBB_Options or source.options or MBB_DefaultOptions);
+        if MBB_ButtonOrder_GetStore then
+            source.buttonOrder = MBB_Profile_CopyArray(MBB_ButtonOrder_GetStore());
+        end
+    end
+
+    local source = MBB_DB.Profiles[sourceName];
+    MBB_DB.Profiles[newName] = {
+        options = MBB_Profile_CopyTable(source.options or MBB_DefaultOptions),
+        buttonOrder = MBB_Profile_CopyArray(source.buttonOrder or {}),
+    };
+
+    MBB_ProfileManager_SelectedName = newName;
+    MBB_Print(string.format(MBB_PROFILE_DUPLICATED or "MBB: Profile '%s' duplicated as '%s'.", MBB_Profile_GetDisplayName(sourceName), newName));
+    if MBB_ProfileManager_Refresh then MBB_ProfileManager_Refresh(); end
+    return true;
+end
+
+MBB_ButtonManagerRows = MBB_ButtonManagerRows or {};
+MBB_ButtonManagerDragName = nil;
+MBB_ButtonManagerDropIndex = nil;
+
+MBB_ButtonOrder_GetStore = function()
+    local profile = MBB_Profile_GetActiveData();
+    if profile then
+        if type(profile.buttonOrder) ~= "table" then
+            profile.buttonOrder = {};
+        end
+        return profile.buttonOrder;
+    end
+
+    if type(MBB_DB) ~= "table" then MBB_DB = {}; end
+    if type(MBB_DB.ButtonOrder) ~= "table" then MBB_DB.ButtonOrder = {}; end
+    return MBB_DB.ButtonOrder;
+end
+
+local function MBB_ButtonOrder_EnsureName(name)
+    if type(name) ~= "string" or name == "" then return end
+    local order = MBB_ButtonOrder_GetStore();
+    for _, storedName in ipairs(order) do
+        if storedName == name then return end
+    end
+    table.insert(order, name);
+end
+
+local function MBB_ButtonOrder_EnsureCurrentButtons()
+    for _, name in ipairs(MBB_Buttons or {}) do
+        MBB_ButtonOrder_EnsureName(name);
+    end
+    for _, name in ipairs(MBB_Exclude or {}) do
+        MBB_ButtonOrder_EnsureName(name);
+    end
+end
+
+MBB_ButtonOrder_ApplyToCollected = function()
+    MBB_ButtonOrder_EnsureCurrentButtons();
+    local order = MBB_ButtonOrder_GetStore();
+    local rank = {};
+    for index, name in ipairs(order) do
+        rank[name] = index;
+    end
+    table.sort(MBB_Buttons, function(a, b)
+        local ar = rank[a] or 999999;
+        local br = rank[b] or 999999;
+        if ar == br then
+            return string.lower(a) < string.lower(b);
+        end
+        return ar < br;
+    end);
+end
+
+local function MBB_ButtonManager_GetKnownButtons()
+    MBB_ButtonOrder_EnsureCurrentButtons();
+
+    local present = {};
+    for _, name in ipairs(MBB_Buttons or {}) do
+        if type(name) == "string" and name ~= "" then present[name] = true; end
+    end
+    for _, name in ipairs(MBB_Exclude or {}) do
+        if type(name) == "string" and name ~= "" then present[name] = true; end
+    end
+
+    local names = {};
+    local seen = {};
+    for _, name in ipairs(MBB_ButtonOrder_GetStore()) do
+        if present[name] and not seen[name] then
+            seen[name] = true;
+            table.insert(names, name);
+        end
+    end
+
+    local missingFromOrder = {};
+    for name in pairs(present) do
+        if not seen[name] then
+            table.insert(missingFromOrder, name);
+        end
+    end
+    table.sort(missingFromOrder, function(a, b)
+        return string.lower(a) < string.lower(b);
+    end);
+    for _, name in ipairs(missingFromOrder) do
+        MBB_ButtonOrder_EnsureName(name);
+        table.insert(names, name);
+    end
+
+    return names;
+end
+
+local function MBB_ButtonOrder_SaveKnownOrder(names)
+    local oldOrder = MBB_ButtonOrder_GetStore();
+    local newOrder = {};
+    local seen = {};
+
+    for _, name in ipairs(names or {}) do
+        if type(name) == "string" and name ~= "" and not seen[name] then
+            seen[name] = true;
+            table.insert(newOrder, name);
+        end
+    end
+
+    -- Keep entries which are currently not visible in this character's manager
+    -- so another character can retain its established account-wide ordering.
+    for _, name in ipairs(oldOrder) do
+        if not seen[name] then
+            seen[name] = true;
+            table.insert(newOrder, name);
+        end
+    end
+
+    local profile = MBB_Profile_GetActiveData();
+    if profile then
+        profile.buttonOrder = newOrder;
+    end
+    -- Compatibility mirror for 1.x/early-2.0 SavedVariables.
+    MBB_DB.ButtonOrder = MBB_Profile_CopyArray(newOrder);
+    MBB_ButtonOrder_ApplyToCollected();
+    MBB_SetPositions();
+end
+
+local function MBB_ButtonOrder_Move(name, targetIndex)
+    local names = MBB_ButtonManager_GetKnownButtons();
+    local sourceIndex = nil;
+    for index, buttonName in ipairs(names) do
+        if buttonName == name then
+            sourceIndex = index;
+            break;
+        end
+    end
+    if not sourceIndex then return end
+
+    targetIndex = math.max(1, math.min(tonumber(targetIndex) or sourceIndex, #names));
+    if targetIndex == sourceIndex then return end
+
+    table.remove(names, sourceIndex);
+    -- targetIndex refers to the row the user pointed at before the removal.
+    -- Moving downward therefore needs the original index, while moving upward
+    -- can be inserted directly at the requested row.
+    if sourceIndex < targetIndex then
+        targetIndex = math.min(targetIndex, #names + 1);
+    end
+    table.insert(names, targetIndex, name);
+    MBB_ButtonOrder_SaveKnownOrder(names);
+end
+
+local function MBB_ButtonOrder_Reset()
+    local names = MBB_ButtonManager_GetKnownButtons();
+    table.sort(names, function(a, b)
+        return string.lower(a) < string.lower(b);
+    end);
+    MBB_ButtonOrder_SaveKnownOrder(names);
+end
+
+local function MBB_ButtonManager_IsInCombat()
+    return InCombatLockdown and InCombatLockdown();
+end
+
+local function MBB_ButtonManager_SetManaged(name, managed)
+    if MBB_ButtonManager_IsInCombat() then
+        MBB_Print(MBB_MANAGER_COMBAT or "MBB: Button management is disabled during combat.");
+        return;
+    end
+
+    local button = _G[name];
+    if not button then
+        return;
+    end
+
+    MBB_ButtonOrder_EnsureName(name);
+
+    if managed then
+        if not MBB_IsInArray(MBB_Buttons, name) then
+            MBB_AddButton(name);
+        end
+    else
+        if MBB_IsInArray(MBB_Buttons, name) then
+            MBB_RestoreButton(name);
+        end
+    end
+
+    MBB_ButtonOrder_ApplyToCollected();
+    MBB_SetPositions();
+end
+
+local function MBB_ButtonManager_FinishDrag()
+    local name = MBB_ButtonManagerDragName;
+    local targetIndex = MBB_ButtonManagerDropIndex;
+    MBB_ButtonManagerDragName = nil;
+    MBB_ButtonManagerDropIndex = nil;
+
+    if name and targetIndex and not MBB_ButtonManager_IsInCombat() then
+        MBB_ButtonOrder_Move(name, targetIndex);
+    end
+
+    if MBB_ButtonManager_Refresh then
+        MBB_ButtonManager_Refresh();
+    end
+end
+
+local function MBB_ButtonManager_ShortenName(name)
+    name = tostring(name or "")
+    -- Frame names are normally ASCII. Keep the list compact and show the full
+    -- value in the tooltip when a name is longer than the visual panel.
+    local maxChars = 27
+    if #name > maxChars then
+        return name:sub(1, maxChars - 3) .. "..."
+    end
+    return name
+end
+
+local function MBB_ButtonManager_SetNameBoxState(row, state)
+    if not row or not row.nameBox or not row.nameBox.SetBackdropColor then return end
+
+    if state == "managed" then
+        -- Soft green: collected by MBB.
+        row.nameBox:SetBackdropColor(0.06, 0.20, 0.09, 0.92)
+        row.nameBox:SetBackdropBorderColor(0.28, 0.68, 0.34, 0.95)
+    elseif state == "minimap" then
+        -- Soft blue: currently left on the minimap.
+        row.nameBox:SetBackdropColor(0.07, 0.12, 0.22, 0.92)
+        row.nameBox:SetBackdropBorderColor(0.30, 0.48, 0.78, 0.95)
+    elseif state == "missing" then
+        -- Muted red: known, but the frame is not currently loaded.
+        row.nameBox:SetBackdropColor(0.22, 0.06, 0.06, 0.88)
+        row.nameBox:SetBackdropBorderColor(0.60, 0.24, 0.24, 0.95)
+    elseif state == "combat" then
+        row.nameBox:SetBackdropColor(0.14, 0.14, 0.14, 0.88)
+        row.nameBox:SetBackdropBorderColor(0.42, 0.42, 0.42, 0.90)
+    else
+        row.nameBox:SetBackdropColor(0.10, 0.10, 0.10, 0.90)
+        row.nameBox:SetBackdropBorderColor(0.45, 0.45, 0.45, 0.90)
+    end
+end
+
+local function MBB_ButtonManager_CreateRow(index)
+    local content = MBB_ButtonManagerScrollChild;
+    if not content then return nil end
+
+    local row = CreateFrame("Frame", nil, content);
+    row:SetHeight(28);
+    row:SetPoint("TOPLEFT", content, "TOPLEFT", 0, -((index - 1) * 28));
+    row:SetPoint("TOPRIGHT", content, "TOPRIGHT", 0, -((index - 1) * 28));
+    row:EnableMouse(true);
+    row:RegisterForDrag("LeftButton");
+
+    row.check = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate");
+    row.check:SetPoint("LEFT", row, "LEFT", 2, 0);
+
+    row.dragText = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
+    row.dragText:SetPoint("LEFT", row.check, "RIGHT", 0, 0);
+    row.dragText:SetWidth(18);
+    row.dragText:SetText("::");
+
+    -- Button name panel: gives every entry a clearer, button-like visual target
+    -- while keeping the whole row available for drag-and-drop.
+    row.nameBox = CreateFrame("Frame", nil, row, "BackdropTemplate");
+    row.nameBox:SetSize(184, 22);
+    row.nameBox:SetPoint("LEFT", row.dragText, "RIGHT", 2, 0);
+    if row.nameBox.SetBackdrop then
+        row.nameBox:SetBackdrop({
+            bgFile = "Interface\\ChatFrame\\ChatFrameBackground",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 16,
+            edgeSize = 10,
+            insets = { left = 2, right = 2, top = 2, bottom = 2 },
+        });
+    end
+
+    row.nameText = row.nameBox:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall");
+    row.nameText:SetPoint("LEFT", row.nameBox, "LEFT", 7, 0);
+    row.nameText:SetPoint("RIGHT", row.nameBox, "RIGHT", -7, 0);
+    row.nameText:SetJustifyH("LEFT");
+    row.nameText:SetWordWrap(false);
+
+    row.statusText = row:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
+    row.statusText:SetPoint("RIGHT", row, "RIGHT", -4, 0);
+    row.statusText:SetWidth(80);
+    row.statusText:SetJustifyH("RIGHT");
+
+    row.down = CreateFrame("Button", nil, row, "UIPanelButtonTemplate");
+    row.down:SetSize(24, 20);
+    row.down:SetPoint("RIGHT", row.statusText, "LEFT", -4, 0);
+    row.down:SetText("v");
+
+    row.up = CreateFrame("Button", nil, row, "UIPanelButtonTemplate");
+    row.up:SetSize(24, 20);
+    row.up:SetPoint("RIGHT", row.down, "LEFT", -2, 0);
+    row.up:SetText("^");
+
+    row.check:SetScript("OnClick", function(self)
+        local currentName = row.buttonName;
+        if not currentName then return end
+
+        if MBB_ButtonManager_IsInCombat() or not _G[currentName] then
+            self:SetChecked(MBB_IsInArray(MBB_Buttons, currentName) ~= nil);
+            return;
+        end
+
+        MBB_ButtonManager_SetManaged(currentName, self:GetChecked() and true or false);
+        MBB_ButtonManager_Refresh();
+    end);
+
+    row.up:SetScript("OnClick", function()
+        if MBB_ButtonManager_IsInCombat() or not row.buttonName or row.managerIndex <= 1 then return end
+        MBB_ButtonOrder_Move(row.buttonName, row.managerIndex - 1);
+        MBB_ButtonManager_Refresh();
+    end);
+
+    row.down:SetScript("OnClick", function()
+        local names = MBB_ButtonManager_GetKnownButtons();
+        if MBB_ButtonManager_IsInCombat() or not row.buttonName or row.managerIndex >= #names then return end
+        MBB_ButtonOrder_Move(row.buttonName, row.managerIndex + 1);
+        MBB_ButtonManager_Refresh();
+    end);
+
+    row.up:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+        GameTooltip:SetText(MBB_MANAGER_MOVE_UP or "Move up", 1, 1, 1);
+        GameTooltip:Show();
+    end);
+    row.up:SetScript("OnLeave", function() GameTooltip:Hide(); end);
+    row.down:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+        GameTooltip:SetText(MBB_MANAGER_MOVE_DOWN or "Move down", 1, 1, 1);
+        GameTooltip:Show();
+    end);
+    row.down:SetScript("OnLeave", function() GameTooltip:Hide(); end);
+
+    row:SetScript("OnDragStart", function(self)
+        if MBB_ButtonManager_IsInCombat() or not self.buttonName then return end
+        MBB_ButtonManagerDragName = self.buttonName;
+        MBB_ButtonManagerDropIndex = self.managerIndex;
+        GameTooltip:Hide();
+        self.nameText:SetTextColor(1, 0.82, 0);
+    end);
+    row:SetScript("OnDragStop", function()
+        MBB_ButtonManager_FinishDrag();
+    end);
+
+    row:SetScript("OnEnter", function(self)
+        if MBB_ButtonManagerDragName then
+            MBB_ButtonManagerDropIndex = self.managerIndex;
+            self.nameText:SetTextColor(1, 0.82, 0);
+            return;
+        end
+        if not self.buttonName then return end
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+        GameTooltip:SetText(self.buttonName, 1, 1, 1);
+        GameTooltip:AddLine(MBB_MANAGER_DRAG_HINT or "Drag this row to change its position.", nil, nil, nil, true);
+        if MBB_IsInArray(MBB_Buttons, self.buttonName) then
+            GameTooltip:AddLine(MBB_MANAGER_TOOLTIP_INCLUDED or "Checked: this button is collected inside MBB.", nil, nil, nil, true);
+        else
+            GameTooltip:AddLine(MBB_MANAGER_TOOLTIP_EXCLUDED or "Unchecked: this button stays on the minimap.", nil, nil, nil, true);
+        end
+        GameTooltip:Show();
+    end);
+    row:SetScript("OnLeave", function(self)
+        GameTooltip:Hide();
+        if not MBB_ButtonManagerDragName then
+            self.nameText:SetTextColor(1, 1, 1);
+        end
+    end);
+
+    MBB_ButtonManagerRows[index] = row;
+    return row;
+end
+
+function MBB_ButtonManager_Refresh()
+    if not MBB_ButtonManagerFrame or not MBB_ButtonManagerScrollChild then return end
+
+    local names = MBB_ButtonManager_GetKnownButtons();
+    local inCombat = MBB_ButtonManager_IsInCombat();
+
+    if MBB_ButtonManagerCountText then
+        MBB_ButtonManagerCountText:SetText(string.format(MBB_MANAGER_COUNT or "%d known buttons", #names));
+    end
+
+    if MBB_ButtonManagerCombatText then
+        if inCombat then
+            MBB_ButtonManagerCombatText:SetText(MBB_MANAGER_COMBAT or "Button management is disabled during combat.");
+            MBB_ButtonManagerCombatText:Show();
+        else
+            MBB_ButtonManagerCombatText:Hide();
+        end
+    end
+
+    if MBB_ButtonManagerEmptyText then
+        if #names == 0 then
+            MBB_ButtonManagerEmptyText:SetText(MBB_MANAGER_EMPTY or "No buttons detected yet. Use Rescan.");
+            MBB_ButtonManagerEmptyText:Show();
+        else
+            MBB_ButtonManagerEmptyText:Hide();
+        end
+    end
+
+    for index, name in ipairs(names) do
+        local row = MBB_ButtonManagerRows[index] or MBB_ButtonManager_CreateRow(index);
+        if row then
+            local button = _G[name];
+            local managed = MBB_IsInArray(MBB_Buttons, name) ~= nil;
+
+            row.buttonName = name;
+            row.managerIndex = index;
+            row.nameText:SetText(MBB_ButtonManager_ShortenName(name));
+            row.check:SetChecked(managed);
+            row.nameText:SetTextColor(1, 1, 1);
+            MBB_ButtonManager_SetNameBoxState(row, managed and "managed" or "minimap");
+
+            if not button then
+                row.statusText:SetText(MBB_MANAGER_MISSING or "Not loaded");
+                row.check:Disable();
+                row.up:Disable();
+                row.down:Disable();
+                row.nameText:SetTextColor(0.70, 0.70, 0.70);
+                MBB_ButtonManager_SetNameBoxState(row, "missing");
+            elseif inCombat then
+                row.statusText:SetText(managed and (MBB_MANAGER_ENABLED or "In MBB") or (MBB_MANAGER_DISABLED or "On Minimap"));
+                row.check:Disable();
+                row.up:Disable();
+                row.down:Disable();
+                row.nameText:SetTextColor(0.78, 0.78, 0.78);
+                MBB_ButtonManager_SetNameBoxState(row, "combat");
+            else
+                row.statusText:SetText(managed and (MBB_MANAGER_ENABLED or "In MBB") or (MBB_MANAGER_DISABLED or "On Minimap"));
+                row.check:Enable();
+                if index > 1 then row.up:Enable(); else row.up:Disable(); end
+                if index < #names then row.down:Enable(); else row.down:Disable(); end
+            end
+
+            row:Show();
+        end
+    end
+
+    for index = #names + 1, #MBB_ButtonManagerRows do
+        MBB_ButtonManagerRows[index]:Hide();
+    end
+
+    MBB_ButtonManagerScrollChild:SetHeight(math.max(#names * 28, 1));
+end
+
+function MBB_ButtonManager_Create()
+    if MBB_ButtonManagerFrame then return end
+
+    local frame = CreateFrame("Frame", "MBB_ButtonManagerFrame", UIParent, "BackdropTemplate");
+    frame:SetSize(460, 485);
+    frame:SetPoint("CENTER", UIParent, "CENTER", 0, 0);
+    -- Keep the Button Manager above the movable settings window.
+    -- FULLSCREEN_DIALOG is intentionally used here because the settings frame is DIALOG/toplevel.
+    frame:SetFrameStrata("FULLSCREEN_DIALOG");
+    frame:SetToplevel(true);
+    frame:SetClampedToScreen(true);
+    frame:SetMovable(true);
+    frame:EnableMouse(true);
+    frame:RegisterForDrag("LeftButton");
+    frame:SetScript("OnDragStart", function(self) self:StartMoving(); end);
+    frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); end);
+    if frame.SetBackdrop then
+        frame:SetBackdrop(BACKDROP_TOOLTIP_OPTIONS);
+    end
+
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge");
+    title:SetPoint("TOP", frame, "TOP", 0, -18);
+    title:SetText(MBB_MANAGER_TITLE or "Button Manager");
+
+    local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall");
+    desc:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -48);
+    desc:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -22, -48);
+    desc:SetJustifyH("LEFT");
+    desc:SetText(MBB_MANAGER_DESC or "Manage known minimap buttons. Checked buttons are collected by MBB.");
+
+    local orderHelp = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall");
+    orderHelp:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -68);
+    orderHelp:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -22, -68);
+    orderHelp:SetJustifyH("LEFT");
+    orderHelp:SetText(MBB_MANAGER_ORDER_HELP or "Drag a row or use the arrows to change the button order.");
+
+    local countText = frame:CreateFontString("MBB_ButtonManagerCountText", "OVERLAY", "GameFontNormalSmall");
+    countText:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -94);
+
+    local combatText = frame:CreateFontString("MBB_ButtonManagerCombatText", "OVERLAY", "GameFontNormalSmall");
+    combatText:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -22, -94);
+    combatText:SetTextColor(1, 0.35, 0.35);
+    combatText:Hide();
+
+    local headerName = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
+    headerName:SetPoint("TOPLEFT", frame, "TOPLEFT", 70, -118);
+    headerName:SetText(MBB_MANAGER_COLUMN_BUTTON or "Button");
+
+    local headerStatus = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
+    headerStatus:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -42, -118);
+    headerStatus:SetText(MBB_MANAGER_COLUMN_STATUS or "Status");
+
+    local scroll = CreateFrame("ScrollFrame", "MBB_ButtonManagerScrollFrame", frame, "UIPanelScrollFrameTemplate");
+    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -136);
+    scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -42, 60);
+
+    local content = CreateFrame("Frame", "MBB_ButtonManagerScrollChild", scroll);
+    content:SetWidth(390);
+    content:SetHeight(1);
+    scroll:SetScrollChild(content);
+
+    local emptyText = content:CreateFontString("MBB_ButtonManagerEmptyText", "OVERLAY", "GameFontHighlight");
+    emptyText:SetPoint("TOPLEFT", content, "TOPLEFT", 12, -12);
+    emptyText:SetWidth(350);
+    emptyText:SetJustifyH("LEFT");
+    emptyText:Hide();
+
+    local rescan = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    rescan:SetSize(118, 22);
+    rescan:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 22, 22);
+    rescan:SetText(MBB_MANAGER_RESCAN or "Rescan");
+    rescan:SetScript("OnClick", function()
+        MBB_Rescan();
+        MBB_ButtonManager_Refresh();
+    end);
+
+    local resetOrder = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    resetOrder:SetSize(170, 22);
+    resetOrder:SetPoint("BOTTOM", frame, "BOTTOM", 0, 22);
+    resetOrder:SetText(MBB_MANAGER_RESET_ORDER or "Reset order");
+    resetOrder:SetScript("OnClick", function()
+        if MBB_ButtonManager_IsInCombat() then return end
+        MBB_ButtonOrder_Reset();
+        MBB_Print(MBB_MANAGER_RESET_ORDER_DONE or "MBB: Button order reset.");
+        MBB_ButtonManager_Refresh();
+    end);
+
+    local close = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    close:SetSize(118, 22);
+    close:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -22, 22);
+    close:SetText(MBB_MANAGER_CLOSE or "Close");
+    close:SetScript("OnClick", function() frame:Hide(); end);
+
+    frame:RegisterEvent("PLAYER_REGEN_DISABLED");
+    frame:RegisterEvent("PLAYER_REGEN_ENABLED");
+    frame:SetScript("OnEvent", function() MBB_ButtonManager_Refresh(); end);
+    frame:SetScript("OnShow", function(self)
+        -- A toplevel settings frame may raise itself when clicked/moved.
+        -- Explicitly raise the manager whenever it is shown so it always stays in front.
+        if MBB_OptionsFrame then
+            local optionsLevel = MBB_OptionsFrame:GetFrameLevel() or 1;
+            if self:GetFrameLevel() <= optionsLevel then
+                self:SetFrameLevel(optionsLevel + 20);
+            end
+        end
+        if self.Raise then
+            self:Raise();
+        end
+
+        MBB_ButtonOrder_ApplyToCollected();
+        MBB_SetPositions();
+        MBB_ButtonManager_Refresh();
+    end);
+
+    if UISpecialFrames then
+        local found = false;
+        for _, name in ipairs(UISpecialFrames) do
+            if name == "MBB_ButtonManagerFrame" then
+                found = true;
+                break;
+            end
+        end
+        if not found then
+            table.insert(UISpecialFrames, "MBB_ButtonManagerFrame");
+        end
+    end
+
+    frame:Hide();
+end
+
+function MBB_ButtonManager_Open()
+    MBB_ButtonManager_Create();
+    if MBB_ProfileManagerFrame then MBB_ProfileManagerFrame:Hide(); end
+    MBB_ButtonOrder_ApplyToCollected();
+    MBB_SetPositions();
+    MBB_ButtonManager_Refresh();
+    MBB_ButtonManagerFrame:Show();
+    if MBB_ButtonManagerFrame.Raise then
+        MBB_ButtonManagerFrame:Raise();
+    end
+end
+
+function MBB_ButtonManager_Toggle()
+    MBB_ButtonManager_Create();
+    if MBB_ButtonManagerFrame:IsShown() then
+        MBB_ButtonManagerFrame:Hide();
+    else
+        MBB_ButtonManager_Open();
+    end
+end
+
+
+-- ---------------------------------------------------------------------------
+-- MBB Reborn 2.0 - Profile Manager
+-- ---------------------------------------------------------------------------
+
+MBB_ProfileManagerRows = MBB_ProfileManagerRows or {};
+MBB_ProfileManager_SelectedName = MBB_ProfileManager_SelectedName or nil;
+
+local function MBB_ProfileManager_EnsurePopups()
+    if not StaticPopupDialogs then return end
+
+    if not StaticPopupDialogs["MBB_CREATE_PROFILE"] then
+        StaticPopupDialogs["MBB_CREATE_PROFILE"] = {
+            text = MBB_PROFILE_NEW_PROMPT or "Enter a name for the new profile:",
+            button1 = ACCEPT,
+            button2 = CANCEL,
+            hasEditBox = true,
+            maxLetters = 32,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3,
+            OnShow = function(self)
+                local editBox = self.editBox or _G[self:GetName() .. "EditBox"];
+                if editBox then
+                    editBox:SetText("");
+                    editBox:SetFocus();
+                end
+            end,
+            OnAccept = function(self)
+                local editBox = self.editBox or _G[self:GetName() .. "EditBox"];
+                if editBox then
+                    MBB_Profile_Create(editBox:GetText());
+                end
+            end,
+            EditBoxOnEnterPressed = function(self)
+                local parent = self:GetParent();
+                MBB_Profile_Create(self:GetText());
+                if parent then parent:Hide(); end
+            end,
+        };
+    end
+
+    if not StaticPopupDialogs["MBB_DELETE_PROFILE"] then
+        StaticPopupDialogs["MBB_DELETE_PROFILE"] = {
+            text = MBB_PROFILE_DELETE_PROMPT or "Delete profile '%s'?",
+            button1 = YES,
+            button2 = NO,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3,
+            OnAccept = function(self, data)
+                data = data or self.data;
+                if type(data) == "string" then
+                    MBB_Profile_Delete(data);
+                end
+            end,
+        };
+    end
+
+    if not StaticPopupDialogs["MBB_RENAME_PROFILE"] then
+        StaticPopupDialogs["MBB_RENAME_PROFILE"] = {
+            text = MBB_PROFILE_RENAME_PROMPT or "Enter a new name for profile '%s':",
+            button1 = ACCEPT,
+            button2 = CANCEL,
+            hasEditBox = true,
+            maxLetters = 32,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3,
+            OnShow = function(self)
+                local editBox = self.editBox or _G[self:GetName() .. "EditBox"];
+                if editBox then
+                    editBox:SetText(MBB_Profile_GetDisplayName(self.data or ""));
+                    editBox:HighlightText();
+                    editBox:SetFocus();
+                end
+            end,
+            OnAccept = function(self, data)
+                local oldName = data or self.data;
+                local editBox = self.editBox or _G[self:GetName() .. "EditBox"];
+                if oldName and editBox then MBB_Profile_Rename(oldName, editBox:GetText()); end
+            end,
+            EditBoxOnEnterPressed = function(self)
+                local parent = self:GetParent();
+                if parent and parent.data then MBB_Profile_Rename(parent.data, self:GetText()); end
+                if parent then parent:Hide(); end
+            end,
+        };
+    end
+
+    if not StaticPopupDialogs["MBB_DUPLICATE_PROFILE"] then
+        StaticPopupDialogs["MBB_DUPLICATE_PROFILE"] = {
+            text = MBB_PROFILE_DUPLICATE_PROMPT or "Enter a name for the copy of profile '%s':",
+            button1 = ACCEPT,
+            button2 = CANCEL,
+            hasEditBox = true,
+            maxLetters = 32,
+            timeout = 0,
+            whileDead = true,
+            hideOnEscape = true,
+            preferredIndex = 3,
+            OnShow = function(self)
+                local editBox = self.editBox or _G[self:GetName() .. "EditBox"];
+                if editBox then
+                    local sourceName = self.data or "";
+                    editBox:SetText(MBB_Profile_GetDisplayName(sourceName) .. " " .. (MBB_PROFILE_COPY_SUFFIX or "Copy"));
+                    editBox:HighlightText();
+                    editBox:SetFocus();
+                end
+            end,
+            OnAccept = function(self, data)
+                local sourceName = data or self.data;
+                local editBox = self.editBox or _G[self:GetName() .. "EditBox"];
+                if sourceName and editBox then MBB_Profile_Duplicate(sourceName, editBox:GetText()); end
+            end,
+            EditBoxOnEnterPressed = function(self)
+                local parent = self:GetParent();
+                if parent and parent.data then MBB_Profile_Duplicate(parent.data, self:GetText()); end
+                if parent then parent:Hide(); end
+            end,
+        };
+    end
+end
+
+local function MBB_ProfileManager_CreateRow(index)
+    local child = MBB_ProfileManagerScrollChild;
+    if not child then return nil; end
+
+    local row = CreateFrame("Button", nil, child, "UIPanelButtonTemplate");
+    row:SetHeight(26);
+    row:SetPoint("TOPLEFT", child, "TOPLEFT", 0, -((index - 1) * 28));
+    row:SetPoint("TOPRIGHT", child, "TOPRIGHT", 0, -((index - 1) * 28));
+    row:SetScript("OnClick", function(self)
+        MBB_ProfileManager_SelectedName = self.profileName;
+        MBB_ProfileManager_Refresh();
+    end);
+    MBB_ProfileManagerRows[index] = row;
+    return row;
+end
+
+function MBB_ProfileManager_Refresh()
+    if not MBB_ProfileManagerFrame then return; end
+    MBB_Profile_EnsureStore();
+
+    local names = MBB_Profile_GetNames();
+    if not MBB_ProfileManager_SelectedName or not MBB_DB.Profiles[MBB_ProfileManager_SelectedName] then
+        MBB_ProfileManager_SelectedName = MBB_DB.ActiveProfile;
+    end
+
+    for index, name in ipairs(names) do
+        local row = MBB_ProfileManagerRows[index] or MBB_ProfileManager_CreateRow(index);
+        row.profileName = name;
+        local label = MBB_Profile_GetDisplayName(name);
+        if name == MBB_DB.ActiveProfile then
+            label = label .. "  [" .. (MBB_PROFILE_ACTIVE or "Active") .. "]";
+        end
+        row:SetText(label);
+        row:Show();
+        if name == MBB_ProfileManager_SelectedName then
+            row:LockHighlight();
+        else
+            row:UnlockHighlight();
+        end
+    end
+
+    for index = #names + 1, #MBB_ProfileManagerRows do
+        MBB_ProfileManagerRows[index]:Hide();
+    end
+
+    if MBB_ProfileManagerScrollChild then
+        MBB_ProfileManagerScrollChild:SetHeight(math.max(1, #names * 28));
+    end
+
+    if MBB_ProfileManagerCurrent then
+        MBB_ProfileManagerCurrent:SetText((MBB_PROFILE_CURRENT or "Current profile:") .. " " .. MBB_Profile_GetDisplayName(MBB_DB.ActiveProfile));
+    end
+
+    if MBB_ProfileManagerActivateButton then
+        local selected = MBB_ProfileManager_SelectedName;
+        MBB_ProfileManagerActivateButton:SetEnabled(selected ~= nil and selected ~= MBB_DB.ActiveProfile and not (InCombatLockdown and InCombatLockdown()));
+    end
+    if MBB_ProfileManagerDeleteButton then
+        local selected = MBB_ProfileManager_SelectedName;
+        MBB_ProfileManagerDeleteButton:SetEnabled(selected ~= nil and selected ~= MBB_PROFILE_DEFAULT_NAME and not (InCombatLockdown and InCombatLockdown()));
+    end
+    if MBB_ProfileManagerRenameButton then
+        local selected = MBB_ProfileManager_SelectedName;
+        MBB_ProfileManagerRenameButton:SetEnabled(selected ~= nil and selected ~= MBB_PROFILE_DEFAULT_NAME and not (InCombatLockdown and InCombatLockdown()));
+    end
+    if MBB_ProfileManagerDuplicateButton then
+        local selected = MBB_ProfileManager_SelectedName;
+        MBB_ProfileManagerDuplicateButton:SetEnabled(selected ~= nil and not (InCombatLockdown and InCombatLockdown()));
+    end
+end
+
+function MBB_ProfileManager_Create()
+    if MBB_ProfileManagerFrame then return; end
+    MBB_ProfileManager_EnsurePopups();
+
+    local frame = CreateFrame("Frame", "MBB_ProfileManagerFrame", UIParent, "BackdropTemplate");
+    frame:SetSize(410, 430);
+    frame:SetPoint("CENTER");
+    frame:SetFrameStrata("FULLSCREEN_DIALOG");
+    frame:SetFrameLevel(50);
+    frame:SetClampedToScreen(true);
+    frame:SetMovable(true);
+    frame:EnableMouse(true);
+    frame:RegisterForDrag("LeftButton");
+    frame:SetScript("OnDragStart", function(self) self:StartMoving(); end);
+    frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing(); end);
+    if frame.SetBackdrop then
+        frame:SetBackdrop(BACKDROP_TOOLTIP_OPTIONS);
+    end
+
+    local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge");
+    title:SetPoint("TOP", frame, "TOP", 0, -18);
+    title:SetText(MBB_PROFILE_TITLE or "Profiles");
+
+    local desc = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall");
+    desc:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -48);
+    desc:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -24, -48);
+    desc:SetJustifyH("LEFT");
+    desc:SetWordWrap(true);
+    desc:SetText(MBB_PROFILE_DESC or "Profiles save layout, scale, position and button order. Excluded buttons remain character-specific.");
+
+    MBB_ProfileManagerCurrent = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal");
+    MBB_ProfileManagerCurrent:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -92);
+
+    local scroll = CreateFrame("ScrollFrame", "MBB_ProfileManagerScrollFrame", frame, "UIPanelScrollFrameTemplate");
+    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 24, -118);
+    scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -46, 126);
+
+    local child = CreateFrame("Frame", "MBB_ProfileManagerScrollChild", scroll);
+    child:SetWidth(330);
+    child:SetHeight(1);
+    scroll:SetScrollChild(child);
+
+    -- Two compact action rows keep profile management clear without squeezing translations.
+    MBB_ProfileManagerActivateButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    MBB_ProfileManagerActivateButton:SetSize(112, 23);
+    MBB_ProfileManagerActivateButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 28, 69);
+    MBB_ProfileManagerActivateButton:SetText(MBB_PROFILE_ACTIVATE or "Activate");
+    MBB_ProfileManagerActivateButton:SetScript("OnClick", function()
+        if MBB_ProfileManager_SelectedName then
+            MBB_Profile_Activate(MBB_ProfileManager_SelectedName);
+        end
+    end);
+
+    MBB_ProfileManagerNewButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    MBB_ProfileManagerNewButton:SetSize(112, 23);
+    MBB_ProfileManagerNewButton:SetPoint("LEFT", MBB_ProfileManagerActivateButton, "RIGHT", 4, 0);
+    MBB_ProfileManagerNewButton:SetText(MBB_PROFILE_NEW or "New");
+    MBB_ProfileManagerNewButton:SetScript("OnClick", function()
+        if InCombatLockdown and InCombatLockdown() then
+            MBB_Print(MBB_PROFILE_COMBAT or "MBB: Profiles cannot be changed during combat.");
+            return;
+        end
+        MBB_ProfileManager_EnsurePopups();
+        if StaticPopup_Show then StaticPopup_Show("MBB_CREATE_PROFILE"); end
+    end);
+
+    MBB_ProfileManagerDuplicateButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    MBB_ProfileManagerDuplicateButton:SetSize(112, 23);
+    MBB_ProfileManagerDuplicateButton:SetPoint("LEFT", MBB_ProfileManagerNewButton, "RIGHT", 4, 0);
+    MBB_ProfileManagerDuplicateButton:SetText(MBB_PROFILE_DUPLICATE or "Duplicate");
+    MBB_ProfileManagerDuplicateButton:SetScript("OnClick", function()
+        local name = MBB_ProfileManager_SelectedName;
+        if not name then return; end
+        if InCombatLockdown and InCombatLockdown() then
+            MBB_Print(MBB_PROFILE_COMBAT or "MBB: Profiles cannot be changed during combat.");
+            return;
+        end
+        MBB_ProfileManager_EnsurePopups();
+        if StaticPopup_Show then
+            StaticPopup_Show("MBB_DUPLICATE_PROFILE", MBB_Profile_GetDisplayName(name), nil, name);
+        end
+    end);
+
+    MBB_ProfileManagerRenameButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    MBB_ProfileManagerRenameButton:SetSize(112, 23);
+    MBB_ProfileManagerRenameButton:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 28, 40);
+    MBB_ProfileManagerRenameButton:SetText(MBB_PROFILE_RENAME or "Rename");
+    MBB_ProfileManagerRenameButton:SetScript("OnClick", function()
+        local name = MBB_ProfileManager_SelectedName;
+        if not name or name == MBB_PROFILE_DEFAULT_NAME then return; end
+        if InCombatLockdown and InCombatLockdown() then
+            MBB_Print(MBB_PROFILE_COMBAT or "MBB: Profiles cannot be changed during combat.");
+            return;
+        end
+        MBB_ProfileManager_EnsurePopups();
+        if StaticPopup_Show then
+            StaticPopup_Show("MBB_RENAME_PROFILE", MBB_Profile_GetDisplayName(name), nil, name);
+        end
+    end);
+
+    MBB_ProfileManagerDeleteButton = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    MBB_ProfileManagerDeleteButton:SetSize(112, 23);
+    MBB_ProfileManagerDeleteButton:SetPoint("LEFT", MBB_ProfileManagerRenameButton, "RIGHT", 4, 0);
+    MBB_ProfileManagerDeleteButton:SetText(MBB_PROFILE_DELETE or "Delete");
+    MBB_ProfileManagerDeleteButton:SetScript("OnClick", function()
+        local name = MBB_ProfileManager_SelectedName;
+        if not name or name == MBB_PROFILE_DEFAULT_NAME then return; end
+        if InCombatLockdown and InCombatLockdown() then
+            MBB_Print(MBB_PROFILE_COMBAT or "MBB: Profiles cannot be changed during combat.");
+            return;
+        end
+        MBB_ProfileManager_EnsurePopups();
+        if StaticPopup_Show then
+            StaticPopup_Show("MBB_DELETE_PROFILE", MBB_Profile_GetDisplayName(name), nil, name);
+        end
+    end);
+
+    local close = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    close:SetSize(112, 23);
+    close:SetPoint("LEFT", MBB_ProfileManagerDeleteButton, "RIGHT", 4, 0);
+    close:SetText(MBB_PROFILE_CLOSE or "Close");
+    close:SetScript("OnClick", function() frame:Hide(); end);
+
+    local hint = frame:CreateFontString(nil, "OVERLAY", "GameFontDisableSmall");
+    hint:SetPoint("BOTTOMLEFT", frame, "BOTTOMLEFT", 24, 14);
+    hint:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -24, 14);
+    hint:SetJustifyH("CENTER");
+    hint:SetText(MBB_PROFILE_HINT or "New profiles start as a copy of the current profile.");
+
+    frame:SetScript("OnShow", function(self)
+        if MBB_OptionsFrame then
+            local optionsLevel = MBB_OptionsFrame:GetFrameLevel() or 1;
+            if self:GetFrameLevel() <= optionsLevel then
+                self:SetFrameLevel(optionsLevel + 30);
+            end
+        end
+        MBB_ProfileManager_SelectedName = MBB_ProfileManager_SelectedName or MBB_DB.ActiveProfile;
+        MBB_ProfileManager_Refresh();
+        if self.Raise then self:Raise(); end
+    end);
+
+    frame:RegisterEvent("PLAYER_REGEN_DISABLED");
+    frame:RegisterEvent("PLAYER_REGEN_ENABLED");
+    frame:SetScript("OnEvent", function()
+        MBB_ProfileManager_Refresh();
+    end);
+
+    if UISpecialFrames then
+        local found = false;
+        for _, name in ipairs(UISpecialFrames) do
+            if name == "MBB_ProfileManagerFrame" then found = true; break; end
+        end
+        if not found then table.insert(UISpecialFrames, "MBB_ProfileManagerFrame"); end
+    end
+
+    frame:Hide();
+end
+
+function MBB_ProfileManager_Open()
+    MBB_ProfileManager_Create();
+    if MBB_ButtonManagerFrame then MBB_ButtonManagerFrame:Hide(); end
+    MBB_ProfileManagerFrame:Show();
+    if MBB_ProfileManagerFrame.Raise then MBB_ProfileManagerFrame:Raise(); end
+end
+
+function MBB_ProfileManager_Toggle()
+    MBB_ProfileManager_Create();
+    if MBB_ProfileManagerFrame:IsShown() then
+        MBB_ProfileManagerFrame:Hide();
+    else
+        MBB_ProfileManager_Open();
+    end
+end
 
 
 function MBB_TestFrame(name)
@@ -336,7 +1688,7 @@ function MBB_TestFrame(name)
 	return hasClick, hasMouseUp, hasMouseDown, hasEnter, hasLeave;
 end
 
-local function MBB_CopyOptions(source)
+function MBB_CopyOptions(source)
 	local copy = {};
 	for key, value in pairs(source or {}) do
 		if( type(value) == "table" ) then
@@ -362,6 +1714,13 @@ function MBB_OnEvent(self, event, ...)
 		end
 	end
 
+	-- Migrate the current 1.x/early-2.0 account-wide settings into the default
+	-- profile once, then bind the active profile as the live options table.
+	MBB_Profile_EnsureStore();
+	local activeProfile = MBB_Profile_GetActiveData();
+	if activeProfile and type(activeProfile.options) == "table" then
+		MBB_GlobalOptions = activeProfile.options;
+	end
 	MBB_Options = MBB_GlobalOptions;
 
 	for opt,val in pairs(MBB_DefaultOptions) do
@@ -375,6 +1734,10 @@ function MBB_OnEvent(self, event, ...)
 		else
 			MBB_Debug(opt .. " option exists: " .. tostring(MBB_Options[opt]));
 		end
+	end
+	if activeProfile then
+		activeProfile.options = MBB_Options;
+		MBB_DB.ButtonOrder = MBB_Profile_CopyArray(activeProfile.buttonOrder or {});
 	end
 	MBB_SetButtonPosition();
 end
@@ -590,10 +1953,15 @@ function MBB_AddButton(name)
 			end
 		end
 	end
+	MBB_ButtonOrder_EnsureName(name);
 	table.insert(MBB_Buttons, name);
+	MBB_ButtonOrder_ApplyToCollected();
 	local i = MBB_IsInArray(MBB_Exclude, name);
 	if( i ) then
 		table.remove(MBB_Exclude, i);
+	end
+	if MBB_ButtonManagerFrame and MBB_ButtonManagerFrame:IsShown() and MBB_ButtonManager_Refresh then
+		MBB_ButtonManager_Refresh();
 	end
 end
 
@@ -620,9 +1988,15 @@ function MBB_RestoreButton(name)
 	if( i ) then
 		table.remove(MBB_Buttons, i);
 	end
+	MBB_ButtonOrder_EnsureName(name);
+	MBB_ButtonOrder_ApplyToCollected();
+	if MBB_ButtonManagerFrame and MBB_ButtonManagerFrame:IsShown() and MBB_ButtonManager_Refresh then
+		MBB_ButtonManager_Refresh();
+	end
 end
 
 function MBB_SetPositions()
+	MBB_ButtonOrder_ApplyToCollected();
 	MBB_MinimapButtonFrame:SetScale(MBB_Options.ButtonScale or 1.0);
 	local directions = {
 		[1] = {"RIGHT", "LEFT"},
@@ -889,6 +2263,173 @@ function MBB_Rescan()
 	end
 end
 
+
+function MBB_SaveOptionsFramePosition()
+    if not MBB_OptionsFrame or not MBB_Options then return end
+
+    local point, _, relativePoint, x, y = MBB_OptionsFrame:GetPoint(1)
+    MBB_Options.OptionsFramePos = {
+        point or "CENTER",
+        relativePoint or point or "CENTER",
+        tonumber(x) or 0,
+        tonumber(y) or 0
+    }
+end
+
+function MBB_RestoreOptionsFramePosition()
+    if not MBB_OptionsFrame then return end
+
+    MBB_OptionsFrame:SetClampedToScreen(true)
+
+    local pos = MBB_Options and MBB_Options.OptionsFramePos
+    if type(pos) ~= "table" then
+        pos = {"CENTER", "CENTER", 0, 0}
+    end
+
+    local point = type(pos[1]) == "string" and pos[1] or "CENTER"
+    local relativePoint = type(pos[2]) == "string" and pos[2] or point
+    local x = tonumber(pos[3]) or 0
+    local y = tonumber(pos[4]) or 0
+
+    -- Protect against stale coordinates after resolution/UI-scale changes.
+    if x > 5000 or x < -5000 or y > 5000 or y < -5000 then
+        point, relativePoint, x, y = "CENTER", "CENTER", 0, 0
+        if MBB_Options then
+            MBB_Options.OptionsFramePos = {point, relativePoint, x, y}
+        end
+    end
+
+    MBB_OptionsFrame:ClearAllPoints()
+    MBB_OptionsFrame:SetPoint(point, UIParent, relativePoint, x, y)
+end
+
+local function MBB_SaveDetachedButtonPosition()
+    if not MBB_MinimapButtonFrame or MBB_Options.AttachToMinimap == 1 then return end
+
+    local point, _, _, xpos, ypos = MBB_MinimapButtonFrame:GetPoint()
+    MBB_Options.DetachedButtonPos = point or "CENTER"
+    MBB_Options.ButtonPos = { tonumber(xpos) or 0, tonumber(ypos) or 0 }
+end
+
+function MBB_SnapDetachedButtonToScreen()
+    if not MBB_MinimapButtonFrame or MBB_Options.AttachToMinimap == 1 then return end
+    if MBB_Options.SnapToScreenEdges ~= 1 then
+        MBB_SaveDetachedButtonPosition()
+        return
+    end
+
+    local frame = MBB_MinimapButtonFrame
+    local parent = UIParent
+
+    -- Use the actual WoW viewport (UIParent), not desktop/monitor dimensions.
+    -- This keeps snapping stable when WoW is running on a secondary monitor
+    -- or when the two monitors use different resolutions/scales.
+    local parentLeft = parent:GetLeft()
+    local parentRight = parent:GetRight()
+    local parentBottom = parent:GetBottom()
+    local parentTop = parent:GetTop()
+
+    local frameLeft = frame:GetLeft()
+    local frameRight = frame:GetRight()
+    local frameBottom = frame:GetBottom()
+    local frameTop = frame:GetTop()
+    local centerX, centerY = frame:GetCenter()
+
+    -- Fallback for rare cases where edge coordinates are not available yet.
+    if not parentLeft or not parentRight or not parentBottom or not parentTop then
+        local parentCenterX, parentCenterY = parent:GetCenter()
+        local parentWidth, parentHeight = parent:GetWidth(), parent:GetHeight()
+        if parentCenterX and parentCenterY and parentWidth and parentHeight
+           and parentWidth > 0 and parentHeight > 0 then
+            parentLeft = parentCenterX - parentWidth * 0.5
+            parentRight = parentCenterX + parentWidth * 0.5
+            parentBottom = parentCenterY - parentHeight * 0.5
+            parentTop = parentCenterY + parentHeight * 0.5
+        end
+    end
+
+    if not frameLeft or not frameRight or not frameBottom or not frameTop
+       or not centerX or not centerY
+       or not parentLeft or not parentRight or not parentBottom or not parentTop then
+        MBB_SaveDetachedButtonPosition()
+        return
+    end
+
+    local parentCenterX = (parentLeft + parentRight) * 0.5
+    local parentCenterY = (parentBottom + parentTop) * 0.5
+
+    -- UIParent and the detached button now share the same coordinate space,
+    -- so no Windows monitor coordinates or cursor scale conversion is needed.
+    local threshold = 120
+
+    local distLeft = math.abs(frameLeft - parentLeft)
+    local distRight = math.abs(parentRight - frameRight)
+    local distBottom = math.abs(frameBottom - parentBottom)
+    local distTop = math.abs(parentTop - frameTop)
+
+    local nearLeft = distLeft <= threshold
+    local nearRight = distRight <= threshold
+    local nearBottom = distBottom <= threshold
+    local nearTop = distTop <= threshold
+
+    local point, x, y
+
+    -- Corners first, then the nearest single viewport edge.
+    if nearTop and nearLeft then
+        point, x, y = "TOPLEFT", 0, 0
+    elseif nearTop and nearRight then
+        point, x, y = "TOPRIGHT", 0, 0
+    elseif nearBottom and nearLeft then
+        point, x, y = "BOTTOMLEFT", 0, 0
+    elseif nearBottom and nearRight then
+        point, x, y = "BOTTOMRIGHT", 0, 0
+    else
+        local bestDistance = math.huge
+        if nearLeft and distLeft < bestDistance then
+            bestDistance = distLeft
+            point, x, y = "LEFT", 0, centerY - parentCenterY
+        end
+        if nearRight and distRight < bestDistance then
+            bestDistance = distRight
+            point, x, y = "RIGHT", 0, centerY - parentCenterY
+        end
+        if nearTop and distTop < bestDistance then
+            bestDistance = distTop
+            point, x, y = "TOP", centerX - parentCenterX, 0
+        end
+        if nearBottom and distBottom < bestDistance then
+            bestDistance = distBottom
+            point, x, y = "BOTTOM", centerX - parentCenterX, 0
+        end
+    end
+
+    if not point then
+        MBB_SaveDetachedButtonPosition()
+        return
+    end
+
+    frame:ClearAllPoints()
+    frame:SetPoint(point, parent, point, x, y)
+
+    MBB_Options.DetachedButtonPos = point
+    MBB_Options.ButtonPos = { x, y }
+end
+
+function MBB_UpdatePositionOptionControls()
+    local detached = MBB_Options and MBB_Options.AttachToMinimap == 0
+    local lockCheck = _G["MBB_OptionsFrame_LockDetachedCheck"]
+    local snapCheck = _G["MBB_OptionsFrame_SnapEdgesCheck"]
+
+    if lockCheck then
+        lockCheck:SetChecked(MBB_Options and MBB_Options.DetachedButtonLocked == 1)
+        lockCheck:SetEnabled(detached and not (InCombatLockdown and InCombatLockdown()))
+    end
+    if snapCheck then
+        snapCheck:SetChecked(MBB_Options and MBB_Options.SnapToScreenEdges == 1)
+        snapCheck:SetEnabled(detached and not (InCombatLockdown and InCombatLockdown()))
+    end
+end
+
 function MBB_ResetButtonPosition()
 	MBB_Options.AttachToMinimap = MBB_DefaultOptions.AttachToMinimap;
 	MBB_Options.ButtonPos = MBB_DefaultOptions.ButtonPos;
@@ -908,7 +2449,7 @@ function MBB_SetButtonPosition()
         MBB_MinimapButtonFrame:ClearAllPoints();
         MBB_MinimapButtonFrame:SetParent(UIParent);
         MBB_MinimapButtonFrame:SetClampedToScreen(true);
-        MBB_MinimapButtonFrame:SetMovable(true);
+        MBB_MinimapButtonFrame:SetMovable(MBB_Options.DetachedButtonLocked ~= 1);
 
         if (not MBB_Options.DetachedButtonPos) then
             MBB_Options.DetachedButtonPos = "CENTER";
@@ -1264,19 +2805,43 @@ local MBB_RepliedToVersionSender = {};
 
 local function MBB_ParseVersion(version)
 	if type(version) ~= "string" or #version > 64 then return nil; end
-	local major, minor, patch = version:match("[vV]?(%d+)%.(%d+)%.(%d+)");
+	local major, minor, patch, suffix = version:match("^[vV]?(%d+)%.(%d+)%.(%d+)([%w%.%-]*)");
 	if not major then return nil; end
-	return tonumber(major), tonumber(minor), tonumber(patch);
+
+	local rank = 3; -- stable release
+	local prerelease = 0;
+	if suffix and suffix ~= "" then
+		local lower = string.lower(suffix);
+		if string.find(lower, "alpha", 1, true) then
+			rank = 0;
+		elseif string.find(lower, "beta", 1, true) then
+			rank = 1;
+		elseif string.find(lower, "rc", 1, true) then
+			rank = 2;
+		else
+			rank = 0;
+		end
+		prerelease = tonumber(lower:match("(%d+)")) or 0;
+	end
+
+	return tonumber(major), tonumber(minor), tonumber(patch), rank, prerelease;
 end
 
 local function MBB_CompareVersions(left, right)
-	local l1, l2, l3 = MBB_ParseVersion(left);
-	local r1, r2, r3 = MBB_ParseVersion(right);
+	local l1, l2, l3, lrank, lpre = MBB_ParseVersion(left);
+	local r1, r2, r3, rrank, rpre = MBB_ParseVersion(right);
 	if not l1 or not r1 then return 0; end
 	if l1 ~= r1 then return l1 > r1 and 1 or -1; end
 	if l2 ~= r2 then return l2 > r2 and 1 or -1; end
 	if l3 ~= r3 then return l3 > r3 and 1 or -1; end
+	if lrank ~= rrank then return lrank > rrank and 1 or -1; end
+	if lpre ~= rpre then return lpre > rpre and 1 or -1; end
 	return 0;
+end
+
+local function MBB_IsPrereleaseVersion(version)
+	local _, _, _, rank = MBB_ParseVersion(version);
+	return rank ~= nil and rank < 3;
 end
 
 local function MBB_RegisterVersionPrefix()
@@ -1298,6 +2863,11 @@ local function MBB_SendVersion(channel, target)
 end
 
 local function MBB_BroadcastVersion(force)
+	-- Alpha/Beta/RC builds must not advertise themselves to stable users.
+	-- Otherwise a stable 1.x client could be told to update to a test build
+	-- that is intentionally hidden from the normal CurseForge client.
+	if MBB_IsPrereleaseVersion(MBB_Version) then return; end
+
 	local now = GetTime and GetTime() or 0;
 	if not force and MBB_LastVersionBroadcast > 0 and (now - MBB_LastVersionBroadcast) < 10 then
 		return;
@@ -1350,16 +2920,20 @@ versionFrame:SetScript("OnEvent", function(self, event, ...)
 		end
 	elseif event == "CHAT_MSG_ADDON" then
 		local prefix, message, channel, sender = ...;
-		if prefix ~= MBB_VERSION_PREFIX or not MBB_ParseVersion(message) then return; end
+		local _, _, _, senderRank = MBB_ParseVersion(message);
+		if prefix ~= MBB_VERSION_PREFIX or senderRank == nil then return; end
 
 		local comparison = MBB_CompareVersions(message, MBB_Version);
 		if comparison > 0 then
 			MBB_ShowUpdateNotice(message);
 		elseif comparison < 0 and sender and not MBB_RepliedToVersionSender[sender] then
-			-- Reply directly so an older client learns about our newer release even
-			-- when our initial guild/group broadcast happened before they logged in.
-			MBB_RepliedToVersionSender[sender] = true;
-			MBB_SendVersion("WHISPER", sender);
+			-- Stable releases may advertise themselves normally. Pre-release builds
+			-- only reply to other pre-release clients, so stable users are never
+			-- prompted to install an Alpha/Beta/RC build.
+			if not MBB_IsPrereleaseVersion(MBB_Version) or senderRank < 3 then
+				MBB_RepliedToVersionSender[sender] = true;
+				MBB_SendVersion("WHISPER", sender);
+			end
 		end
 	end
 end);
