@@ -52,4 +52,69 @@ if( GetLocale() == "itIT" ) then
 	-- Version update notification
 	MBB_UPDATE_AVAILABLE = "MBB: È disponibile una versione più recente: %s (stai usando %s). Aggiorna tramite CurseForge.";
 
+	-- MBB Reborn 2.0 - Button Manager
+	MBB_MANAGER_BUTTON = "Gestione pulsanti...";
+	MBB_MANAGER_TITLE = "Gestione pulsanti";
+	MBB_MANAGER_DESC = "Gestisci i pulsanti minimappa conosciuti. I pulsanti selezionati vengono raccolti in MBB.";
+	MBB_MANAGER_ENABLED = "In MBB";
+	MBB_MANAGER_DISABLED = "Sulla minimappa";
+	MBB_MANAGER_MISSING = "Non caricato";
+	MBB_MANAGER_RESCAN = "Riscansiona";
+	MBB_MANAGER_CLOSE = "Chiudi";
+	MBB_MANAGER_COUNT = "%d pulsanti conosciuti";
+	MBB_MANAGER_EMPTY = "Nessun pulsante rilevato. Usa Riscansiona.";
+	MBB_MANAGER_COMBAT = "La gestione dei pulsanti è disattivata durante il combattimento.";
+	MBB_MANAGER_COLUMN_BUTTON = "Pulsante";
+	MBB_MANAGER_COLUMN_STATUS = "Stato";
+	MBB_MANAGER_TOOLTIP_INCLUDED = "Selezionato: questo pulsante viene raccolto in MBB.";
+	MBB_MANAGER_TOOLTIP_EXCLUDED = "Non selezionato: questo pulsante resta sulla minimappa.";
+	MBB_HELP_MANAGER = "  |c00ffffffmanager|r: apre la gestione dei pulsanti minimappa";
+
+	-- MBB Reborn 2.0 - Button ordering
+	MBB_MANAGER_ORDER_HELP = "Trascina una riga o usa le frecce per cambiare l’ordine dei pulsanti.";
+	MBB_MANAGER_MOVE_UP = "Sposta su";
+	MBB_MANAGER_MOVE_DOWN = "Sposta giù";
+	MBB_MANAGER_RESET_ORDER = "Reimposta ordine";
+	MBB_MANAGER_RESET_ORDER_DONE = "MBB: ordine dei pulsanti reimpostato.";
+	MBB_MANAGER_DRAG_HINT = "Trascina questa riga per cambiarne la posizione.";
+
+
+-- MBB Reborn 2.0 - Positioning
+	MBB_OPTIONS_LOCK_POSITION = "Blocca posizione";
+	MBB_OPTIONS_LOCK_POSITION_DESC = "Impedisce di spostare accidentalmente il pulsante MBB sganciato.";
+	MBB_OPTIONS_SNAP_EDGES = "Aggancia ai bordi della finestra WoW";
+	MBB_OPTIONS_SNAP_EDGES_DESC = "Aggancia il pulsante MBB sganciato ai bordi vicini della finestra WoW. Nota: gli addon di WoW non possono rilevare il confine fisico tra più monitor.";
+
+
+-- MBB Reborn 2.0 - Profiles
+	MBB_PROFILE_BUTTON = "Profili";
+	MBB_PROFILE_TITLE = "Profili";
+	MBB_PROFILE_DESC = "I profili salvano layout, scala, posizione e ordine dei pulsanti. Le esclusioni restano specifiche del personaggio.";
+	MBB_PROFILE_CURRENT = "Profilo attuale:";
+	MBB_PROFILE_ACTIVE = "Attivo";
+	MBB_PROFILE_DEFAULT_DISPLAY = "Predefinito";
+	MBB_PROFILE_ACTIVATE = "Attiva";
+	MBB_PROFILE_NEW = "Nuovo";
+	MBB_PROFILE_DELETE = "Elimina";
+	MBB_PROFILE_CLOSE = "Chiudi";
+	MBB_PROFILE_HINT = "I nuovi profili iniziano come copia del profilo attuale.";
+	MBB_PROFILE_NEW_PROMPT = "Inserisci un nome per il nuovo profilo:";
+	MBB_PROFILE_DELETE_PROMPT = "Eliminare il profilo '%s'?";
+	MBB_PROFILE_APPLIED = "MBB: profilo '%s' attivato.";
+	MBB_PROFILE_CREATED = "MBB: profilo '%s' creato.";
+	MBB_PROFILE_DELETED = "MBB: profilo '%s' eliminato.";
+	MBB_PROFILE_EXISTS = "MBB: esiste già un profilo chiamato '%s'.";
+	MBB_PROFILE_INVALID = "MBB: inserisci un nome profilo da 1 a 32 caratteri.";
+	MBB_PROFILE_DELETE_DEFAULT = "MBB: il profilo predefinito non può essere eliminato.";
+	MBB_PROFILE_COMBAT = "MBB: i profili non possono essere cambiati durante il combattimento.";
+	MBB_PROFILE_RENAME = "Rinomina";
+	MBB_PROFILE_DUPLICATE = "Duplica";
+	MBB_PROFILE_RENAME_PROMPT = "Inserisci un nuovo nome per il profilo '%s':";
+	MBB_PROFILE_DUPLICATE_PROMPT = "Inserisci un nome per la copia del profilo '%s':";
+	MBB_PROFILE_COPY_SUFFIX = "Copia";
+	MBB_PROFILE_RENAMED = "MBB: Profilo '%s' rinominato in '%s'.";
+	MBB_PROFILE_DUPLICATED = "MBB: Profilo '%s' duplicato come '%s'.";
+	MBB_PROFILE_RENAME_DEFAULT = "MBB: Il profilo predefinito non può essere rinominato.";
+	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: apre la gestione dei profili";
+
 end
