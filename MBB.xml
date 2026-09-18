@@ -76,19 +76,20 @@
 			<OnDragStart>
 				if( MBB_Options.AttachToMinimap == 1 ) then
 					MBB_DragFlag = 1;
-				else
+				elseif MBB_Options.DetachedButtonLocked ~= 1 then
 					self:StartMoving();
 				end
 			</OnDragStart>
 			<OnDragStop>
 				if( MBB_Options.AttachToMinimap == 1 ) then
 					MBB_DragFlag = 0;
-				else
+					local point,_,_,xpos,ypos = self:GetPoint();
+					MBB_Options.ButtonPos = {xpos,ypos};
+					MBB_Options.DetachedButtonPos = point;
+				elseif MBB_Options.DetachedButtonLocked ~= 1 then
 					self:StopMovingOrSizing();
+					MBB_SnapDetachedButtonToScreen();
 				end
-				local point,_,_,xpos,ypos = self:GetPoint();
-				MBB_Options.ButtonPos = {xpos,ypos};
-				MBB_Options.DetachedButtonPos = point;
 			</OnDragStop>
 			<OnUpdate>
 				MBB_OnUpdate(elapsed);
@@ -134,9 +135,9 @@
 		<DisabledTexture file="Interface\Minimap\UI-Minimap-ZoomOutButton-Disabled" />
 		<HighlightTexture file="Interface\Minimap\UI-Minimap-ZoomButton-Highlight" alphaMode="ADD" />
 	</Button>
-	<Frame name="MBB_OptionsFrame" inherits="BackdropTemplate" hidden="true" parent="UIParent" toplevel="true" movable="true" enableMouse="true">
+	<Frame name="MBB_OptionsFrame" inherits="BackdropTemplate" hidden="true" parent="UIParent" toplevel="true" movable="true" enableMouse="true" frameStrata="DIALOG">
 		<Size>
-			<AbsDimension x="315" y="390" />
+			<AbsDimension x="460" y="585" />
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER" />
@@ -148,7 +149,7 @@
 			<Layer>
 				<Texture name="$parent_Header" file="Interface\DialogFrame\UI-DialogBox-Header">
 					<Size>
-						<AbsDimension x="370" y="64" />
+						<AbsDimension x="480" y="64" />
 					</Size>
 					<Anchors>
 						<Anchor point="TOP">
@@ -176,7 +177,7 @@
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="20" y="-85" />
+								<AbsDimension x="28" y="-95" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -190,7 +191,7 @@
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="20" y="-155" />
+								<AbsDimension x="28" y="-185" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -204,7 +205,21 @@
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="20" y="-175" />
+								<AbsDimension x="28" y="-215" />
+							</Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
+			</Layer>
+			<Layer>
+				<FontString name="$parent_ProfileQuickLabel" inherits="GameFontHighlight" text="MBB_PROFILE_CURRENT" justifyH="RIGHT">
+					<Size>
+						<AbsDimension x="135" y="18" />
+					</Size>
+					<Anchors>
+						<Anchor point="TOPLEFT" relativeTo="$parent">
+							<Offset>
+								<AbsDimension x="30" y="-442" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -216,7 +231,7 @@
 				<Anchors>
 					<Anchor point="TOPLEFT" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="150" y="-45" />
+							<AbsDimension x="205" y="-55" />
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -607,7 +622,7 @@
 	<Anchors>
 		<Anchor point="TOPLEFT" relativeTo="$parent_BottomAltRadio" relativePoint="BOTTOMLEFT">
 			<Offset>
-				<AbsDimension x="0" y="6" />
+				<AbsDimension x="0" y="-4" />
 			</Offset>
 		</Anchor>
 	</Anchors>
@@ -629,8 +644,10 @@
             if t then
                 t:SetText(MBB_OPTIONS_DETACH or "Detach from Minimap");
                 t:SetTextColor(1, 1, 1);
+                t:ClearAllPoints();
+                t:SetPoint("LEFT", self, "RIGHT", 2, 1);
                 t:SetJustifyH("LEFT");
-                t:SetWidth(220);
+                t:SetWidth(230);
                 t:SetWordWrap(false);
             end
 
@@ -675,6 +692,9 @@
             if MBB_SetButtonPosition then
                 MBB_SetButtonPosition();
             end
+            if MBB_UpdatePositionOptionControls then
+                MBB_UpdatePositionOptionControls();
+            end
         </OnClick>
 
         
@@ -697,38 +717,109 @@
     
 
     
+</CheckButton>
+
+<CheckButton name="$parent_LockDetachedCheck" inherits="UICheckButtonTemplate">
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent_DetachFromMinimapCheck" relativePoint="BOTTOMLEFT">
+            <Offset><AbsDimension x="0" y="-2" /></Offset>
+        </Anchor>
+    </Anchors>
     <Scripts>
         <OnLoad>
             self:RegisterEvent("PLAYER_REGEN_DISABLED");
             self:RegisterEvent("PLAYER_REGEN_ENABLED");
         </OnLoad>
         <OnEvent>
-            if event == "PLAYER_REGEN_DISABLED" then
-                self:SetEnabled(false);
-            elseif event == "PLAYER_REGEN_ENABLED" then
-                self:SetEnabled(true);
-            end
+            MBB_UpdatePositionOptionControls();
         </OnEvent>
+        <OnShow>
+            local t = _G[self:GetName().."Text"];
+            if t then
+                t:SetText(MBB_OPTIONS_LOCK_POSITION or "Lock detached position");
+                t:SetTextColor(1, 1, 1);
+                t:ClearAllPoints();
+                t:SetPoint("LEFT", self, "RIGHT", 2, 1);
+                t:SetJustifyH("LEFT");
+                t:SetWidth(230);
+                t:SetWordWrap(false);
+            end
+            MBB_UpdatePositionOptionControls();
+        </OnShow>
+        <OnClick>
+            if not MBB_Options then return; end
+            if InCombatLockdown and InCombatLockdown() then
+                MBB_UpdatePositionOptionControls();
+                return;
+            end
+            MBB_Options.DetachedButtonLocked = self:GetChecked() and 1 or 0;
+            MBB_SetButtonPosition();
+            MBB_UpdatePositionOptionControls();
+        </OnClick>
         <OnEnter>
             GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
-            GameTooltip:SetText(MBB_OPTIONS_DETACH or "Detach from Minimap", 1, 1, 1);
-            GameTooltip:AddLine(MBB_OPTIONS_DETACH_DESC or "Allows the MBB button to be freely moved on the screen.", nil, nil, nil, true);
-            if InCombatLockdown and InCombatLockdown() then
-                GameTooltip:AddLine(MBB_OPTIONS_DETACH_COMBAT or "Cannot be changed during combat.", 1, 0.3, 0.3, true);
-            end
+            GameTooltip:SetText(MBB_OPTIONS_LOCK_POSITION or "Lock detached position", 1, 1, 1);
+            GameTooltip:AddLine(MBB_OPTIONS_LOCK_POSITION_DESC or "Prevents accidentally moving the detached MBB button.", nil, nil, nil, true);
             GameTooltip:Show();
         </OnEnter>
-        <OnLeave>
-            GameTooltip:Hide();
-        </OnLeave>
+        <OnLeave>GameTooltip:Hide();</OnLeave>
+    </Scripts>
+</CheckButton>
+
+<CheckButton name="$parent_SnapEdgesCheck" inherits="UICheckButtonTemplate">
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent_LockDetachedCheck" relativePoint="BOTTOMLEFT">
+            <Offset><AbsDimension x="0" y="0" /></Offset>
+        </Anchor>
+    </Anchors>
+    <Scripts>
+        <OnLoad>
+            self:RegisterEvent("PLAYER_REGEN_DISABLED");
+            self:RegisterEvent("PLAYER_REGEN_ENABLED");
+        </OnLoad>
+        <OnEvent>
+            MBB_UpdatePositionOptionControls();
+        </OnEvent>
+        <OnShow>
+            local t = _G[self:GetName().."Text"];
+            if t then
+                t:SetText(MBB_OPTIONS_SNAP_EDGES or "Snap to WoW window edges");
+                t:SetTextColor(1, 1, 1);
+                t:ClearAllPoints();
+                t:SetPoint("LEFT", self, "RIGHT", 2, 1);
+                t:SetJustifyH("LEFT");
+                t:SetWidth(230);
+                t:SetWordWrap(false);
+            end
+            MBB_UpdatePositionOptionControls();
+        </OnShow>
+        <OnClick>
+            if not MBB_Options then return; end
+            if InCombatLockdown and InCombatLockdown() then
+                MBB_UpdatePositionOptionControls();
+                return;
+            end
+            MBB_Options.SnapToScreenEdges = self:GetChecked() and 1 or 0;
+            if MBB_Options.SnapToScreenEdges == 1 then
+                MBB_SnapDetachedButtonToScreen();
+            end
+            MBB_UpdatePositionOptionControls();
+        </OnClick>
+        <OnEnter>
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            GameTooltip:SetText(MBB_OPTIONS_SNAP_EDGES or "Snap to WoW window edges", 1, 1, 1);
+            GameTooltip:AddLine(MBB_OPTIONS_SNAP_EDGES_DESC or "Snaps the detached MBB button to nearby WoW window edges. WoW addons cannot detect physical monitor boundaries.", nil, nil, nil, true);
+            GameTooltip:Show();
+        </OnEnter>
+        <OnLeave>GameTooltip:Hide();</OnLeave>
     </Scripts>
 </CheckButton>
 
 <Slider name="$parent_ButtonScaleSlider" inherits="OptionsSliderTemplate" minValue="0.75" maxValue="1.50" valueStep="0.05" defaultValue="1.0" obeyStepOnDrag="true">
-    <Size><AbsDimension x="150" y="17" /></Size>
+    <Size><AbsDimension x="180" y="17" /></Size>
     <Anchors>
-        <Anchor point="TOPLEFT" relativeTo="$parent_DetachFromMinimapCheck" relativePoint="BOTTOMLEFT">
-            <Offset><AbsDimension x="0" y="-18" /></Offset>
+        <Anchor point="TOPLEFT" relativeTo="$parent_SnapEdgesCheck" relativePoint="BOTTOMLEFT">
+            <Offset><AbsDimension x="0" y="-22" /></Offset>
         </Anchor>
     </Anchors>
     <Scripts>
@@ -751,14 +842,85 @@
         </OnValueChanged>
     </Scripts>
 </Slider>
+
+<Frame name="$parent_ProfileDropDown" inherits="UIDropDownMenuTemplate">
+    <Size><AbsDimension x="220" y="32" /></Size>
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent">
+            <Offset><AbsDimension x="174" y="-432" /></Offset>
+        </Anchor>
+    </Anchors>
+    <Scripts>
+        <OnLoad>
+            if UIDropDownMenu_SetWidth then UIDropDownMenu_SetWidth(self, 190); end
+            if UIDropDownMenu_JustifyText then UIDropDownMenu_JustifyText(self, "LEFT"); end
+            if UIDropDownMenu_Initialize then UIDropDownMenu_Initialize(self, MBB_ProfileDropdown_Initialize); end
+            self:RegisterEvent("PLAYER_REGEN_DISABLED");
+            self:RegisterEvent("PLAYER_REGEN_ENABLED");
+        </OnLoad>
+        <OnShow>
+            if UIDropDownMenu_Initialize then UIDropDownMenu_Initialize(self, MBB_ProfileDropdown_Initialize); end
+            MBB_ProfileDropdown_Refresh();
+        </OnShow>
+        <OnEvent>
+            MBB_ProfileDropdown_Refresh();
+        </OnEvent>
+    </Scripts>
+</Frame>
+
+
+<Button name="$parent_ManagerButton" inherits="UIPanelButtonTemplate" text="MBB_MANAGER_BUTTON">
+    <Size>
+        <AbsDimension x="190" y="23" />
+    </Size>
+    <Anchors>
+        <Anchor point="TOP" relativeTo="$parent">
+            <Offset>
+                <AbsDimension x="-100" y="-485" />
+            </Offset>
+        </Anchor>
+    </Anchors>
+    <Scripts>
+        <OnClick>
+            MBB_ButtonManager_Toggle();
+        </OnClick>
+    </Scripts>
+</Button>
+<Button name="$parent_ProfileButton" inherits="UIPanelButtonTemplate" text="MBB_PROFILE_BUTTON">
+    <Size>
+        <AbsDimension x="190" y="23" />
+    </Size>
+    <Anchors>
+        <Anchor point="TOP" relativeTo="$parent">
+            <Offset>
+                <AbsDimension x="100" y="-485" />
+            </Offset>
+        </Anchor>
+    </Anchors>
+    <Scripts>
+        <OnClick>
+            MBB_ProfileManager_Toggle();
+        </OnClick>
+        <OnEnter>
+            GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+            GameTooltip:SetText(MBB_PROFILE_BUTTON or "Profiles", 1, 1, 1);
+            if MBB_Profile_GetActiveDisplayName then
+                GameTooltip:AddLine((MBB_PROFILE_CURRENT or "Current profile:") .. " " .. MBB_Profile_GetActiveDisplayName(), 1, 0.82, 0);
+            end
+            GameTooltip:AddLine(MBB_PROFILE_DESC or "Profiles save layout, scale, position and button order. Excluded buttons remain character-specific.", nil, nil, nil, true);
+            GameTooltip:Show();
+        </OnEnter>
+        <OnLeave>GameTooltip:Hide();</OnLeave>
+    </Scripts>
+</Button>
 <Button name="$parent_OKButton" inherits="UIPanelButtonTemplate" text="MBB_OPTIONS_OKBUTTON">
 				<Size>
-					<AbsDimension x="125" y="21" />
+					<AbsDimension x="145" y="23" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="-75" y="-345" />
+							<AbsDimension x="-90" y="-530" />
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -794,12 +956,12 @@
 			</Button>
 			<Button name="$parent_CancelButton" inherits="UIPanelButtonTemplate" text="MBB_OPTIONS_CANCELBUTTON">
 				<Size>
-					<AbsDimension x="125" y="21" />
+					<AbsDimension x="145" y="23" />
 				</Size>
 				<Anchors>
 					<Anchor point="TOP" relativeTo="$parent">
 						<Offset>
-							<AbsDimension x="75" y="-345" />
+							<AbsDimension x="90" y="-530" />
 						</Offset>
 					</Anchor>
 				</Anchors>
@@ -811,10 +973,24 @@
 			</Button>
 		</Frames>
 		<Scripts>
+			<OnLoad inherit="append">
+				self:RegisterForDrag("LeftButton");
+				self:SetClampedToScreen(true);
+			</OnLoad>
 			<OnShow>
+				MBB_RestoreOptionsFramePosition();
 				MBB_OptionsFrame_HeaderText:SetText("MBB" .. " " .. MBB_OPTIONS_HEADER);
 				MBB_UpdateAltRadioButtons();
+				MBB_UpdatePositionOptionControls();
+                if MBB_ProfileDropdown_Refresh then MBB_ProfileDropdown_Refresh(); end
 			</OnShow>
+			<OnDragStart>
+				self:StartMoving();
+			</OnDragStart>
+			<OnDragStop>
+				self:StopMovingOrSizing();
+				MBB_SaveOptionsFramePosition();
+			</OnDragStop>
 		</Scripts>
 	</Frame>
 </Ui>
