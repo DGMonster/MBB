@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.0"
+local sourceVersion = "@project-version@"
 
 -- @project-version@ is replaced only in packaged releases. When the addon is
 -- installed directly from the source tree, do not accidentally read the
