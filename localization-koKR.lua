@@ -52,4 +52,69 @@ MBB_OPTIONS_DETACH_COMBAT = "전투 중에는 변경할 수 없습니다.";
 	-- Version update notification
 	MBB_UPDATE_AVAILABLE = "MBB: 새 버전을 사용할 수 있습니다: %s (현재 사용 중: %s). CurseForge에서 업데이트하세요.";
 
+	-- MBB Reborn 2.0 - Button Manager
+	MBB_MANAGER_BUTTON = "버튼 관리...";
+	MBB_MANAGER_TITLE = "버튼 관리";
+	MBB_MANAGER_DESC = "알려진 미니맵 버튼을 관리합니다. 체크된 버튼은 MBB에 모입니다.";
+	MBB_MANAGER_ENABLED = "MBB 안";
+	MBB_MANAGER_DISABLED = "미니맵";
+	MBB_MANAGER_MISSING = "로드되지 않음";
+	MBB_MANAGER_RESCAN = "다시 검색";
+	MBB_MANAGER_CLOSE = "닫기";
+	MBB_MANAGER_COUNT = "알려진 버튼 %d개";
+	MBB_MANAGER_EMPTY = "아직 감지된 버튼이 없습니다. 다시 검색을 사용하세요.";
+	MBB_MANAGER_COMBAT = "전투 중에는 버튼 관리를 사용할 수 없습니다.";
+	MBB_MANAGER_COLUMN_BUTTON = "버튼";
+	MBB_MANAGER_COLUMN_STATUS = "상태";
+	MBB_MANAGER_TOOLTIP_INCLUDED = "체크됨: 이 버튼은 MBB 안에 모입니다.";
+	MBB_MANAGER_TOOLTIP_EXCLUDED = "체크 해제됨: 이 버튼은 미니맵에 남습니다.";
+	MBB_HELP_MANAGER = "  |c00ffffffmanager|r: 미니맵 버튼 관리 창을 엽니다";
+
+	-- MBB Reborn 2.0 - Button ordering
+	MBB_MANAGER_ORDER_HELP = "행을 드래그하거나 화살표를 사용하여 버튼 순서를 변경하세요.";
+	MBB_MANAGER_MOVE_UP = "위로 이동";
+	MBB_MANAGER_MOVE_DOWN = "아래로 이동";
+	MBB_MANAGER_RESET_ORDER = "순서 초기화";
+	MBB_MANAGER_RESET_ORDER_DONE = "MBB: 버튼 순서를 초기화했습니다.";
+	MBB_MANAGER_DRAG_HINT = "이 행을 드래그하여 위치를 변경하세요.";
+
+
+-- MBB Reborn 2.0 - Positioning
+	MBB_OPTIONS_LOCK_POSITION = "위치 잠금";
+	MBB_OPTIONS_LOCK_POSITION_DESC = "분리된 MBB 버튼이 실수로 이동하지 않도록 합니다.";
+	MBB_OPTIONS_SNAP_EDGES = "WoW 창 가장자리에 맞추기";
+	MBB_OPTIONS_SNAP_EDGES_DESC = "분리된 MBB 버튼을 가까운 WoW 창 가장자리에 맞춥니다. 참고: WoW 애드온은 여러 모니터 사이의 물리적 경계를 감지할 수 없습니다.";
+
+
+-- MBB Reborn 2.0 - Profiles
+	MBB_PROFILE_BUTTON = "프로필";
+	MBB_PROFILE_TITLE = "프로필";
+	MBB_PROFILE_DESC = "프로필은 배치, 크기, 위치 및 버튼 순서를 저장합니다. 제외 버튼 목록은 캐릭터별로 유지됩니다.";
+	MBB_PROFILE_CURRENT = "현재 프로필:";
+	MBB_PROFILE_ACTIVE = "활성";
+	MBB_PROFILE_DEFAULT_DISPLAY = "기본";
+	MBB_PROFILE_ACTIVATE = "활성화";
+	MBB_PROFILE_NEW = "새로 만들기";
+	MBB_PROFILE_DELETE = "삭제";
+	MBB_PROFILE_CLOSE = "닫기";
+	MBB_PROFILE_HINT = "새 프로필은 현재 프로필의 복사본으로 시작합니다.";
+	MBB_PROFILE_NEW_PROMPT = "새 프로필 이름을 입력하세요:";
+	MBB_PROFILE_DELETE_PROMPT = "프로필 '%s'을(를) 삭제할까요?";
+	MBB_PROFILE_APPLIED = "MBB: 프로필 '%s'이(가) 활성화되었습니다.";
+	MBB_PROFILE_CREATED = "MBB: 프로필 '%s'이(가) 생성되었습니다.";
+	MBB_PROFILE_DELETED = "MBB: 프로필 '%s'이(가) 삭제되었습니다.";
+	MBB_PROFILE_EXISTS = "MBB: '%s' 이름의 프로필이 이미 있습니다.";
+	MBB_PROFILE_INVALID = "MBB: 1~32자의 프로필 이름을 입력하세요.";
+	MBB_PROFILE_DELETE_DEFAULT = "MBB: 기본 프로필은 삭제할 수 없습니다.";
+	MBB_PROFILE_COMBAT = "MBB: 전투 중에는 프로필을 변경할 수 없습니다.";
+	MBB_PROFILE_RENAME = "이름 변경";
+	MBB_PROFILE_DUPLICATE = "복제";
+	MBB_PROFILE_RENAME_PROMPT = "프로필 '%s'의 새 이름을 입력하세요:";
+	MBB_PROFILE_DUPLICATE_PROMPT = "프로필 '%s' 복사본의 이름을 입력하세요:";
+	MBB_PROFILE_COPY_SUFFIX = "복사본";
+	MBB_PROFILE_RENAMED = "MBB: 프로필 '%s'의 이름을 '%s'(으)로 변경했습니다.";
+	MBB_PROFILE_DUPLICATED = "MBB: 프로필 '%s'을(를) '%s'(으)로 복제했습니다.";
+	MBB_PROFILE_RENAME_DEFAULT = "MBB: 기본 프로필의 이름은 변경할 수 없습니다.";
+	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: 프로필 관리 창을 엽니다";
+
 end
