@@ -52,4 +52,69 @@ MBB_OPTIONS_DETACH_COMBAT = "Нельзя изменить во время бо�
 	-- Version update notification
 	MBB_UPDATE_AVAILABLE = "MBB: Доступна новая версия: %s (у вас %s). Обновите аддон через CurseForge.";
 
+	-- MBB Reborn 2.0 - Button Manager
+	MBB_MANAGER_BUTTON = "Управление кнопками...";
+	MBB_MANAGER_TITLE = "Управление кнопками";
+	MBB_MANAGER_DESC = "Управление известными кнопками миникарты. Отмеченные кнопки собираются в MBB.";
+	MBB_MANAGER_ENABLED = "В MBB";
+	MBB_MANAGER_DISABLED = "На миникарте";
+	MBB_MANAGER_MISSING = "Не загружено";
+	MBB_MANAGER_RESCAN = "Пересканировать";
+	MBB_MANAGER_CLOSE = "Закрыть";
+	MBB_MANAGER_COUNT = "Известных кнопок: %d";
+	MBB_MANAGER_EMPTY = "Кнопки пока не обнаружены. Используйте пересканирование.";
+	MBB_MANAGER_COMBAT = "Управление кнопками недоступно во время боя.";
+	MBB_MANAGER_COLUMN_BUTTON = "Кнопка";
+	MBB_MANAGER_COLUMN_STATUS = "Состояние";
+	MBB_MANAGER_TOOLTIP_INCLUDED = "Отмечено: кнопка собрана внутри MBB.";
+	MBB_MANAGER_TOOLTIP_EXCLUDED = "Не отмечено: кнопка остаётся на миникарте.";
+	MBB_HELP_MANAGER = "  |c00ffffffmanager|r: открывает управление кнопками миникарты";
+
+	-- MBB Reborn 2.0 - Button ordering
+	MBB_MANAGER_ORDER_HELP = "Перетащите строку или используйте стрелки, чтобы изменить порядок кнопок.";
+	MBB_MANAGER_MOVE_UP = "Переместить вверх";
+	MBB_MANAGER_MOVE_DOWN = "Переместить вниз";
+	MBB_MANAGER_RESET_ORDER = "Сбросить порядок";
+	MBB_MANAGER_RESET_ORDER_DONE = "MBB: порядок кнопок сброшен.";
+	MBB_MANAGER_DRAG_HINT = "Перетащите эту строку, чтобы изменить её позицию.";
+
+
+-- MBB Reborn 2.0 - Positioning
+	MBB_OPTIONS_LOCK_POSITION = "Закрепить позицию";
+	MBB_OPTIONS_LOCK_POSITION_DESC = "Не позволяет случайно переместить откреплённую кнопку MBB.";
+	MBB_OPTIONS_SNAP_EDGES = "Привязка к краям окна WoW";
+	MBB_OPTIONS_SNAP_EDGES_DESC = "Привязывает откреплённую кнопку MBB к ближайшим краям окна WoW. Примечание: аддоны WoW не могут определить физическую границу между несколькими мониторами.";
+
+
+-- MBB Reborn 2.0 - Profiles
+	MBB_PROFILE_BUTTON = "Профили";
+	MBB_PROFILE_TITLE = "Профили";
+	MBB_PROFILE_DESC = "Профили сохраняют раскладку, масштаб, позицию и порядок кнопок. Исключения остаются отдельными для каждого персонажа.";
+	MBB_PROFILE_CURRENT = "Текущий профиль:";
+	MBB_PROFILE_ACTIVE = "Активен";
+	MBB_PROFILE_DEFAULT_DISPLAY = "По умолчанию";
+	MBB_PROFILE_ACTIVATE = "Активировать";
+	MBB_PROFILE_NEW = "Новый";
+	MBB_PROFILE_DELETE = "Удалить";
+	MBB_PROFILE_CLOSE = "Закрыть";
+	MBB_PROFILE_HINT = "Новые профили создаются как копия текущего профиля.";
+	MBB_PROFILE_NEW_PROMPT = "Введите имя нового профиля:";
+	MBB_PROFILE_DELETE_PROMPT = "Удалить профиль '%s'?";
+	MBB_PROFILE_APPLIED = "MBB: профиль '%s' активирован.";
+	MBB_PROFILE_CREATED = "MBB: профиль '%s' создан.";
+	MBB_PROFILE_DELETED = "MBB: профиль '%s' удалён.";
+	MBB_PROFILE_EXISTS = "MBB: профиль с именем '%s' уже существует.";
+	MBB_PROFILE_INVALID = "MBB: введите имя профиля длиной от 1 до 32 символов.";
+	MBB_PROFILE_DELETE_DEFAULT = "MBB: профиль по умолчанию нельзя удалить.";
+	MBB_PROFILE_COMBAT = "MBB: профили нельзя менять в бою.";
+	MBB_PROFILE_RENAME = "Переименовать";
+	MBB_PROFILE_DUPLICATE = "Дублировать";
+	MBB_PROFILE_RENAME_PROMPT = "Введите новое имя для профиля «%s»:";
+	MBB_PROFILE_DUPLICATE_PROMPT = "Введите имя для копии профиля «%s»:";
+	MBB_PROFILE_COPY_SUFFIX = "Копия";
+	MBB_PROFILE_RENAMED = "MBB: профиль «%s» переименован в «%s».";
+	MBB_PROFILE_DUPLICATED = "MBB: профиль «%s» скопирован как «%s».";
+	MBB_PROFILE_RENAME_DEFAULT = "MBB: профиль по умолчанию нельзя переименовать.";
+	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: открывает управление профилями";
+
 end
