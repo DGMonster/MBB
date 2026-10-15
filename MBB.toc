@@ -1,4 +1,4 @@
-## Interface: 120100, 120001, 120000, 50504, 50503, 20506, 20505, 11509, 11508, 16001
+## Interface: 120105, 50504, 20506, 11509, 16001
 ## Author: GrazyMonster
 ## Credits: Original authors – karlsnyder, vallantv, SkunFly
 ## Contributors: CosmicCleric
