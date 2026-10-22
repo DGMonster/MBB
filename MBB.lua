@@ -18,9 +18,9 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.0"
+local sourceVersion = "v2.0.3"
 
--- @project-version@ is replaced only in packaged releases. When the addon is
+-- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the
 -- historical "based on 4.0.26" number as the current MBB version.
 if type(rawVersion) == "string" and not rawVersion:find("@project%-version@") then
@@ -2086,7 +2086,7 @@ function MBB_OnClick(arg1)
 		end
 		MBB_SetButtonPosition();
 	elseif( arg1 and arg1 == "RightButton" ) then
-		MBB_OptionsFrame:Show();
+		if MBB_OpenOptions then MBB_OpenOptions(); else MBB_OptionsFrame:Show(); end
 	else
 		if( MBB_IsShown == 1 ) then
 			MBB_HideButtons();
@@ -2266,6 +2266,7 @@ end
 
 function MBB_SaveOptionsFramePosition()
     if not MBB_OptionsFrame or not MBB_Options then return end
+    if MBB_OptionsFrame.MBBEmbedded then return end
 
     local point, _, relativePoint, x, y = MBB_OptionsFrame:GetPoint(1)
     MBB_Options.OptionsFramePos = {
@@ -2278,6 +2279,7 @@ end
 
 function MBB_RestoreOptionsFramePosition()
     if not MBB_OptionsFrame then return end
+    if MBB_OptionsFrame.MBBEmbedded then return end
 
     MBB_OptionsFrame:SetClampedToScreen(true)
 

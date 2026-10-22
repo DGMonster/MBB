@@ -27,3 +27,5 @@ localization-koKR.lua
 localization-ruRU.lua
 localization-itIT.lua
 MBB.xml
+MenuTheme.lua
+SettingsEntry.lua

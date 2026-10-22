@@ -985,11 +985,13 @@
                 if MBB_ProfileDropdown_Refresh then MBB_ProfileDropdown_Refresh(); end
 			</OnShow>
 			<OnDragStart>
-				self:StartMoving();
+				if not self.MBBEmbedded then self:StartMoving(); end
 			</OnDragStart>
 			<OnDragStop>
-				self:StopMovingOrSizing();
-				MBB_SaveOptionsFramePosition();
+				if not self.MBBEmbedded then
+					self:StopMovingOrSizing();
+					MBB_SaveOptionsFramePosition();
+				end
 			</OnDragStop>
 		</Scripts>
 	</Frame>
