@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.3"
+local sourceVersion = "@project-version@"
 
 -- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the

@@ -1,5 +1,9 @@
 -- Default / enUS localization
 
+BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+BINDING_NAME_MBB_REBORN_TOGGLE = "Toggle minimap button bar";
+BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "Open MBB settings";
+
 MBB_TOOLTIP1 = "Ctrl + Right click on a button to reattach it to the minimap.";
 MBB_OPTIONS_HEADER = "Options";
 MBB_OPTIONS_OKBUTTON = "Ok";

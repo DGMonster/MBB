@@ -1,0 +1,15 @@
+<Bindings>
+    <Binding name="MBB_REBORN_TOGGLE" header="MBB_REBORN" category="MinimapButtonBag Reborn">
+        if MBB_Options and MBB_MinimapButtonFrame and not InCombatLockdown() then
+            MBB_OnClick("LeftButton");
+            if MBB_IsShown == 1 and not MBB_MinimapButtonFrame:IsMouseOver() then
+                MBB_ShowTimeout = 0;
+            end
+        end
+    </Binding>
+    <Binding name="MBB_REBORN_OPEN_OPTIONS" category="MinimapButtonBag Reborn">
+        if MBB_OpenOptions and not InCombatLockdown() then
+            MBB_OpenOptions();
+        end
+    </Binding>
+</Bindings>

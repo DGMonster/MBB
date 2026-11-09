@@ -1,5 +1,18 @@
 # Changelog
 
+## v2.0.4 – 2026-11-09
+
+### English
+
+- Added two customizable key bindings to toggle the minimap button bar and open the MBB settings window.
+- Both actions are unassigned by default and can be bound in WoW's Keybindings menu. They are available outside combat.
+
+### Deutsch
+
+- Zwei frei belegbare Tastaturaktionen ergänzt. Sie klappen die Minimap-Leiste ein und aus oder öffnen die MBB-Einstellungen.
+- Beide Aktionen sind standardmäßig unbelegt und lassen sich in WoWs Tastaturbelegung zuweisen. Sie sind außerhalb des Kampfes verfügbar.
+
+
 ## v2.0.3 – 2026-10-22
 
 ### English

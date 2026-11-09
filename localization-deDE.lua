@@ -1,4 +1,6 @@
 if( GetLocale() == "deDE" ) then
+	BINDING_NAME_MBB_REBORN_TOGGLE = "Minimap-Leiste ein- und ausklappen";
+	BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "MBB-Einstellungen öffnen";
 	MBB_TOOLTIP1 = "Strg + Rechtsklick auf einen Button, um ihn aus der Leiste zu lösen.";
 	MBB_OPTIONS_HEADER = "Einstellungen";
 	MBB_OPTIONS_OKBUTTON = "Ok";
