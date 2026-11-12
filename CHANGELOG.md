@@ -1,5 +1,19 @@
 # Changelog
 
+## v2.0.6
+
+### English
+
+- Documented the licensing policy. Previously published code remains under the Unlicense. Future original contributions explicitly marked as MIT-licensed use the MIT License.
+- Included both license texts and clarified the original and Reborn credits.
+- No gameplay or feature changes.
+
+### Deutsch
+
+- Die Lizenzregelung ist jetzt dokumentiert. Bereits veröffentlichter Code bleibt unter der Unlicense. Neue eigene Beiträge können künftig ausdrücklich unter MIT veröffentlicht werden.
+- Beide Lizenztexte sind enthalten. Die Credits für das Original und Reborn sind ausgewiesen.
+- Keine Änderungen an den Addon-Funktionen.
+
 ## v2.0.4 – 2026-11-09
 
 ### English
