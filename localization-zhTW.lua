@@ -117,4 +117,22 @@ MBB_OPTIONS_DETACH_COMBAT = "戰鬥中無法變更。";
 	MBB_PROFILE_RENAME_DEFAULT = "MBB：預設設定檔無法重新命名。";
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r：開啟設定檔管理器";
 
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+    BINDING_NAME_MBB_REBORN_TOGGLE = "展開或收合小地圖按鈕列";
+    BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "開啟 MBB 設定";
+    MBB_OPTIONS_MANUAL_ORDER = "手動";
+    MBB_OPTIONS_SECTION_BAR = "按鈕列";
+    MBB_OPTIONS_SECTION_LAYOUT = "版面配置";
+    MBB_OPTIONS_SECTION_POSITION = "位置";
+    MBB_OPTIONS_SECTION_PROFILE = "設定檔";
+    MBB_OPTIONS_SECTION_SORT = "排序";
+    MBB_MANAGER_SEARCH = "搜尋按鈕";
+    MBB_MANAGER_FILTER_ALL = "所有按鈕";
+    MBB_MANAGER_FILTER_EXCLUDED = "已排除";
+    MBB_MANAGER_NO_MATCHES = "找不到符合的按鈕。";
+    MBB_OPTIONS_RESET_POSITION = "重設位置";
+    MBB_MANAGER_PIN = "釘選按鈕";
+    MBB_MANAGER_UNPIN = "取消釘選按鈕";
+    MBB_TOOLTIP_HOLD_BAR = "按滑鼠中鍵可保持按鈕列展開或解除固定。";
+    MBB_BUTTON_EXPANSION_OVERVIEW = "魔獸世界總覽";
 end

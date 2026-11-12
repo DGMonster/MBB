@@ -117,4 +117,22 @@ MBB_OPTIONS_DETACH_COMBAT = "Нельзя изменить во время бо�
 	MBB_PROFILE_RENAME_DEFAULT = "MBB: профиль по умолчанию нельзя переименовать.";
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: открывает управление профилями";
 
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+    BINDING_NAME_MBB_REBORN_TOGGLE = "Развернуть или свернуть панель миникарты";
+    BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "Открыть настройки MBB";
+    MBB_OPTIONS_MANUAL_ORDER = "Вручную";
+    MBB_OPTIONS_SECTION_BAR = "Панель";
+    MBB_OPTIONS_SECTION_LAYOUT = "Расположение";
+    MBB_OPTIONS_SECTION_POSITION = "Позиция";
+    MBB_OPTIONS_SECTION_PROFILE = "Профиль";
+    MBB_OPTIONS_SECTION_SORT = "Сортировка";
+    MBB_MANAGER_SEARCH = "Поиск кнопок";
+    MBB_MANAGER_FILTER_ALL = "Все кнопки";
+    MBB_MANAGER_FILTER_EXCLUDED = "Исключённые";
+    MBB_MANAGER_NO_MATCHES = "Подходящих кнопок нет.";
+    MBB_OPTIONS_RESET_POSITION = "Сбросить позицию";
+    MBB_MANAGER_PIN = "Закрепить кнопку";
+    MBB_MANAGER_UNPIN = "Открепить кнопку";
+    MBB_TOOLTIP_HOLD_BAR = "Средний щелчок закрепляет открытую панель или открепляет её.";
+    MBB_BUTTON_EXPANSION_OVERVIEW = "Обзор WoW";
 end

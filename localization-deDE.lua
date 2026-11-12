@@ -121,3 +121,34 @@ if( GetLocale() == "deDE" ) then
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: Öffnet die Profilverwaltung";
 
 end
+
+if GetLocale() == "deDE" then
+    MBB_OPTIONS_MANUAL_ORDER = "Manuell";
+end
+
+if GetLocale() == "deDE" then
+    MBB_OPTIONS_SECTION_BAR = "Leiste";
+    MBB_OPTIONS_SECTION_LAYOUT = "Anordnung";
+    MBB_OPTIONS_SECTION_POSITION = "Position";
+    MBB_OPTIONS_SECTION_PROFILE = "Profil";
+    MBB_OPTIONS_SECTION_SORT = "Sortierung";
+end
+
+if GetLocale() == "deDE" then
+    MBB_MANAGER_SEARCH = "Buttons suchen";
+    MBB_MANAGER_FILTER_ALL = "Alle Buttons";
+    MBB_MANAGER_FILTER_EXCLUDED = "Ausgeschlossen";
+    MBB_MANAGER_NO_MATCHES = "Keine passenden Buttons.";
+    MBB_OPTIONS_RESET_POSITION = "Position zurücksetzen";
+end
+
+if GetLocale() == "deDE" then
+    MBB_MANAGER_PIN = "Button anpinnen";
+    MBB_MANAGER_UNPIN = "Button lösen";
+    MBB_TOOLTIP_HOLD_BAR = "Mittelklick hält die Leiste offen oder löst sie";
+end
+
+if GetLocale() == "deDE" then
+    MBB_BUTTON_EXPANSION_OVERVIEW = "WoW-Übersicht";
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+end

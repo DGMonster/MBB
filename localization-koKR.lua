@@ -117,4 +117,22 @@ MBB_OPTIONS_DETACH_COMBAT = "전투 중에는 변경할 수 없습니다.";
 	MBB_PROFILE_RENAME_DEFAULT = "MBB: 기본 프로필의 이름은 변경할 수 없습니다.";
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: 프로필 관리 창을 엽니다";
 
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+    BINDING_NAME_MBB_REBORN_TOGGLE = "미니맵 버튼 모음 펼치기/접기";
+    BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "MBB 설정 열기";
+    MBB_OPTIONS_MANUAL_ORDER = "수동";
+    MBB_OPTIONS_SECTION_BAR = "버튼 모음";
+    MBB_OPTIONS_SECTION_LAYOUT = "배치";
+    MBB_OPTIONS_SECTION_POSITION = "위치";
+    MBB_OPTIONS_SECTION_PROFILE = "프로필";
+    MBB_OPTIONS_SECTION_SORT = "정렬";
+    MBB_MANAGER_SEARCH = "버튼 검색";
+    MBB_MANAGER_FILTER_ALL = "모든 버튼";
+    MBB_MANAGER_FILTER_EXCLUDED = "제외됨";
+    MBB_MANAGER_NO_MATCHES = "일치하는 버튼이 없습니다.";
+    MBB_OPTIONS_RESET_POSITION = "위치 초기화";
+    MBB_MANAGER_PIN = "버튼 고정";
+    MBB_MANAGER_UNPIN = "버튼 고정 해제";
+    MBB_TOOLTIP_HOLD_BAR = "가운데 클릭으로 버튼 모음을 펼친 상태로 고정하거나 해제합니다.";
+    MBB_BUTTON_EXPANSION_OVERVIEW = "WoW 개요";
 end

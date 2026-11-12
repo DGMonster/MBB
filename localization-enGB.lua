@@ -120,3 +120,23 @@ MBB_PROFILE_RENAMED = "MBB: Profile '%s' renamed to '%s'.";
 MBB_PROFILE_DUPLICATED = "MBB: Profile '%s' duplicated as '%s'.";
 MBB_PROFILE_RENAME_DEFAULT = "MBB: The Default profile cannot be renamed.";
 MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: Opens the profile manager";
+
+MBB_OPTIONS_MANUAL_ORDER = "Manual";
+
+MBB_OPTIONS_SECTION_BAR = "Bar";
+MBB_OPTIONS_SECTION_LAYOUT = "Layout";
+MBB_OPTIONS_SECTION_POSITION = "Position";
+MBB_OPTIONS_SECTION_PROFILE = "Profile";
+MBB_OPTIONS_SECTION_SORT = "Sorting";
+
+MBB_MANAGER_SEARCH = "Search buttons";
+MBB_MANAGER_FILTER_ALL = "All buttons";
+MBB_MANAGER_FILTER_EXCLUDED = "Excluded";
+MBB_MANAGER_NO_MATCHES = "No matching buttons.";
+MBB_OPTIONS_RESET_POSITION = "Reset position";
+
+MBB_MANAGER_PIN = "Pin button";
+MBB_MANAGER_UNPIN = "Unpin button";
+MBB_TOOLTIP_HOLD_BAR = "Middle-click to hold or release the bar";
+
+MBB_BUTTON_EXPANSION_OVERVIEW = "WoW Overview";

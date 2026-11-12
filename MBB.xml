@@ -46,11 +46,16 @@
 						<Anchor point="TOPLEFT" />
 					</Anchors>
 				</Texture>
+                <FontString name="$parent_HoldMark" inherits="GameFontNormal" text="*" hidden="true">
+                    <Anchors>
+                        <Anchor point="TOPRIGHT" />
+                    </Anchors>
+                </FontString>
 			</Layer>
 		</Layers>
 		<Scripts>
 			<OnLoad>
-				self:RegisterForClicks("LeftButtonUp","RightButtonUp");
+				self:RegisterForClicks("LeftButtonUp","RightButtonUp","MiddleButtonUp");
 				self:RegisterForDrag("LeftButton");
 			</OnLoad>
 			<OnMouseDown>
@@ -67,6 +72,7 @@
 				GameTooltip:SetOwner(self, "ANCHOR_LEFT");
 				GameTooltip:AddLine("MinimapButtonBag Reborn");
 				GameTooltip:AddLine(MBB_TOOLTIP1, 0, 1, 0);
+                GameTooltip:AddLine(MBB_TOOLTIP_HOLD_BAR, 1, 1, 1);
 				GameTooltip:Show();
 			</OnEnter>
 			<OnLeave>
@@ -137,7 +143,7 @@
 	</Button>
 	<Frame name="MBB_OptionsFrame" inherits="BackdropTemplate" hidden="true" parent="UIParent" toplevel="true" movable="true" enableMouse="true" frameStrata="DIALOG">
 		<Size>
-			<AbsDimension x="460" y="585" />
+			<AbsDimension x="480" y="541" />
 		</Size>
 		<Anchors>
 			<Anchor point="CENTER" />
@@ -147,6 +153,13 @@
 		</KeyValues>
 		<Layers>
 			<Layer>
+				<FontString name="$parent_VersionText" inherits="GameFontDisableSmall">
+					<Anchors>
+						<Anchor point="BOTTOMLEFT">
+							<Offset><AbsDimension x="14" y="9" /></Offset>
+						</Anchor>
+					</Anchors>
+				</FontString>
 				<Texture name="$parent_Header" file="Interface\DialogFrame\UI-DialogBox-Header">
 					<Size>
 						<AbsDimension x="480" y="64" />
@@ -170,6 +183,21 @@
 				</FontString>
 			</Layer>
 			<Layer>
+				<FontString inherits="GameFontNormal" text="MBB_OPTIONS_SECTION_BAR">
+					<Anchors><Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="28" y="-40" /></Offset></Anchor></Anchors>
+				</FontString>
+				<FontString inherits="GameFontNormal" text="MBB_OPTIONS_SECTION_LAYOUT">
+					<Anchors><Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="28" y="-133" /></Offset></Anchor></Anchors>
+				</FontString>
+				<FontString inherits="GameFontNormal" text="MBB_OPTIONS_SECTION_POSITION">
+					<Anchors><Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="28" y="-298" /></Offset></Anchor></Anchors>
+				</FontString>
+				<FontString inherits="GameFontNormal" text="MBB_OPTIONS_SECTION_PROFILE">
+					<Anchors><Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="28" y="-421" /></Offset></Anchor></Anchors>
+				</FontString>
+				<FontString inherits="GameFontHighlight" text="MBB_OPTIONS_SECTION_SORT">
+					<Anchors><Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="28" y="-184" /></Offset></Anchor></Anchors>
+				</FontString>
 				<FontString name="$parent_ExpansionLabel" inherits="GameFontHighlight" text="MBB_OPTIONS_EXPANSIONLABEL" justifyH="LEFT">
 					<Size>
 						<AbsDimension x="130" y="15" />
@@ -177,7 +205,7 @@
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="28" y="-95" />
+								<AbsDimension x="28" y="-155" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -191,7 +219,7 @@
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="28" y="-185" />
+								<AbsDimension x="28" y="-217" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -205,21 +233,21 @@
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="28" y="-215" />
+								<AbsDimension x="28" y="-244" />
 							</Offset>
 						</Anchor>
 					</Anchors>
 				</FontString>
 			</Layer>
 			<Layer>
-				<FontString name="$parent_ProfileQuickLabel" inherits="GameFontHighlight" text="MBB_PROFILE_CURRENT" justifyH="RIGHT">
+				<FontString name="$parent_ProfileQuickLabel" inherits="GameFontHighlight" text="MBB_PROFILE_CURRENT" justifyH="LEFT">
 					<Size>
 						<AbsDimension x="135" y="18" />
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" relativeTo="$parent">
 							<Offset>
-								<AbsDimension x="30" y="-442" />
+								<AbsDimension x="28" y="-450" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -229,11 +257,7 @@
 		<Frames>
 			<Slider name="$parent_TimeoutSlider" inherits="OptionsSliderTemplate" minValue="0" maxValue="0">
 				<Anchors>
-					<Anchor point="TOPLEFT" relativeTo="$parent">
-						<Offset>
-							<AbsDimension x="205" y="-55" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="185" y="-72" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -277,11 +301,7 @@
 			</Slider>
 			<CheckButton name="$parent_LeftRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="$parent_ExpansionLabel" relativePoint="RIGHT">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="164" y="-155" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -313,11 +333,7 @@
 			</CheckButton>
 			<CheckButton name="$parent_TopRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent_LeftRadio" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="234" y="-155" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -349,11 +365,7 @@
 			</CheckButton>
 			<CheckButton name="$parent_RightRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent_TopRadio" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="304" y="-155" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -385,11 +397,7 @@
 			</CheckButton>
 			<CheckButton name="$parent_BottomRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent_RightRadio" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="374" y="-155" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -424,11 +432,7 @@
 					<AbsDimension x="30" y="20" />
 				</Size>
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="$parent_MaxButtonsLabel" relativePoint="RIGHT">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="164" y="-215" /></Offset></Anchor>
 				</Anchors>
 				<KeyValues>
 					<KeyValue key="backdropInfo" value="BACKDROP_MAXBUTTONS_OPTIONS" keyType="string" type="global" />
@@ -479,11 +483,7 @@
 			</EditBox>
 			<CheckButton name="$parent_LeftAltRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="LEFT" relativeTo="$parent_AltExpansionLabel" relativePoint="RIGHT">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="164" y="-244" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -514,11 +514,7 @@
 			</CheckButton>
 			<CheckButton name="$parent_TopAltRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent_LeftAltRadio" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="234" y="-244" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -549,11 +545,7 @@
 			</CheckButton>
 			<CheckButton name="$parent_RightAltRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent_TopAltRadio" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="304" y="-244" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -584,11 +576,7 @@
 			</CheckButton>
 			<CheckButton name="$parent_BottomAltRadio" inherits="UIRadioButtonTemplate">
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent_RightAltRadio" relativePoint="BOTTOM">
-						<Offset>
-							<AbsDimension x="0" y="0" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="374" y="-244" /></Offset></Anchor>
 				</Anchors>
 				<Layers>
 					<Layer>
@@ -620,11 +608,7 @@
 			
 <CheckButton name="$parent_DetachFromMinimapCheck" inherits="UICheckButtonTemplate">
 	<Anchors>
-		<Anchor point="TOPLEFT" relativeTo="$parent_BottomAltRadio" relativePoint="BOTTOMLEFT">
-			<Offset>
-				<AbsDimension x="0" y="-4" />
-			</Offset>
-		</Anchor>
+		<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="154" y="-316" /></Offset></Anchor>
 	</Anchors>
 <Scripts>
         <OnLoad>
@@ -815,13 +799,40 @@
     </Scripts>
 </CheckButton>
 
+<Button name="$parent_ResetPositionButton" inherits="UIPanelButtonTemplate" text="MBB_OPTIONS_RESET_POSITION">
+    <Size><AbsDimension x="156" y="23" /></Size>
+    <Anchors>
+        <Anchor point="TOPRIGHT" relativeTo="$parent">
+            <Offset><AbsDimension x="-26" y="-350" /></Offset>
+        </Anchor>
+    </Anchors>
+    <Scripts>
+        <OnClick>
+            if InCombatLockdown and InCombatLockdown() then return; end
+            MBB_ResetButtonPosition();
+            MBB_OptionsFrame_DetachFromMinimapCheck:SetChecked(false);
+            MBB_UpdatePositionOptionControls();
+            MBB_SetPositions();
+        </OnClick>
+    </Scripts>
+</Button>
+
 <Slider name="$parent_ButtonScaleSlider" inherits="OptionsSliderTemplate" minValue="0.75" maxValue="1.50" valueStep="0.05" defaultValue="1.0" obeyStepOnDrag="true">
     <Size><AbsDimension x="180" y="17" /></Size>
     <Anchors>
-        <Anchor point="TOPLEFT" relativeTo="$parent_SnapEdgesCheck" relativePoint="BOTTOMLEFT">
-            <Offset><AbsDimension x="0" y="-22" /></Offset>
-        </Anchor>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="185" y="-104" /></Offset></Anchor>
     </Anchors>
+    <Layers>
+        <Layer>
+            <FontString inherits="GameFontHighlight" text="MBB_OPTIONS_BUTTONSCALE" justifyH="RIGHT">
+                <Anchors>
+                    <Anchor point="RIGHT" relativePoint="LEFT">
+                        <Offset><AbsDimension x="-8" y="0" /></Offset>
+                    </Anchor>
+                </Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
     <Scripts>
         <OnLoad>
             self:SetMinMaxValues(0.75, 1.50);
@@ -837,7 +848,7 @@
             local value = math.floor((self:GetValue() * 100) + 0.5) / 100;
             local label = _G[self:GetName().."Text"];
             if label then
-                label:SetText((MBB_OPTIONS_BUTTONSCALE or "Button size:") .. " " .. math.floor(value * 100 + 0.5) .. "%");
+                label:SetText(math.floor(value * 100 + 0.5) .. "%");
             end
         </OnValueChanged>
     </Scripts>
@@ -846,13 +857,11 @@
 <Frame name="$parent_ProfileDropDown" inherits="UIDropDownMenuTemplate">
     <Size><AbsDimension x="220" y="32" /></Size>
     <Anchors>
-        <Anchor point="TOPLEFT" relativeTo="$parent">
-            <Offset><AbsDimension x="174" y="-432" /></Offset>
-        </Anchor>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="145" y="-443" /></Offset></Anchor>
     </Anchors>
     <Scripts>
         <OnLoad>
-            if UIDropDownMenu_SetWidth then UIDropDownMenu_SetWidth(self, 190); end
+            if UIDropDownMenu_SetWidth then UIDropDownMenu_SetWidth(self, 145); end
             if UIDropDownMenu_JustifyText then UIDropDownMenu_JustifyText(self, "LEFT"); end
             if UIDropDownMenu_Initialize then UIDropDownMenu_Initialize(self, MBB_ProfileDropdown_Initialize); end
             self:RegisterEvent("PLAYER_REGEN_DISABLED");
@@ -869,16 +878,61 @@
 </Frame>
 
 
+<CheckButton name="$parent_ManualOrder" inherits="UIRadioButtonTemplate">
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="164" y="-184" /></Offset></Anchor>
+    </Anchors>
+    <Layers>
+        <Layer>
+            <FontString inherits="GameFontHighlight" text="MBB_OPTIONS_MANUAL_ORDER" justifyH="LEFT">
+                <Anchors><Anchor point="LEFT" relativePoint="RIGHT" /></Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+    <Scripts>
+        <OnClick>MBB_SelectSortOrder(self);</OnClick>
+    </Scripts>
+</CheckButton>
+
+<CheckButton name="$parent_AscendingOrder" inherits="UIRadioButtonTemplate">
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="255" y="-184" /></Offset></Anchor>
+    </Anchors>
+    <Layers>
+        <Layer>
+            <FontString inherits="GameFontHighlight" text="ABC" justifyH="LEFT">
+                <Anchors><Anchor point="LEFT" relativePoint="RIGHT" /></Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+    <Scripts>
+        <OnClick>MBB_SelectSortOrder(self);</OnClick>
+    </Scripts>
+</CheckButton>
+
+<CheckButton name="$parent_ReverseOrder" inherits="UIRadioButtonTemplate">
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="330" y="-184" /></Offset></Anchor>
+    </Anchors>
+    <Layers>
+        <Layer>
+            <FontString inherits="GameFontHighlight" text="CBA" justifyH="LEFT">
+                <Anchors><Anchor point="LEFT" relativePoint="RIGHT" /></Anchors>
+            </FontString>
+        </Layer>
+    </Layers>
+    <Scripts>
+        <OnClick>MBB_SelectSortOrder(self);</OnClick>
+    </Scripts>
+</CheckButton>
+
+
 <Button name="$parent_ManagerButton" inherits="UIPanelButtonTemplate" text="MBB_MANAGER_BUTTON">
     <Size>
         <AbsDimension x="190" y="23" />
     </Size>
     <Anchors>
-        <Anchor point="TOP" relativeTo="$parent">
-            <Offset>
-                <AbsDimension x="-100" y="-485" />
-            </Offset>
-        </Anchor>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="162" y="-267" /></Offset></Anchor>
     </Anchors>
     <Scripts>
         <OnClick>
@@ -888,14 +942,10 @@
 </Button>
 <Button name="$parent_ProfileButton" inherits="UIPanelButtonTemplate" text="MBB_PROFILE_BUTTON">
     <Size>
-        <AbsDimension x="190" y="23" />
+        <AbsDimension x="118" y="23" />
     </Size>
     <Anchors>
-        <Anchor point="TOP" relativeTo="$parent">
-            <Offset>
-                <AbsDimension x="100" y="-485" />
-            </Offset>
-        </Anchor>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="336" y="-447" /></Offset></Anchor>
     </Anchors>
     <Scripts>
         <OnClick>
@@ -918,11 +968,7 @@
 					<AbsDimension x="145" y="23" />
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent">
-						<Offset>
-							<AbsDimension x="-90" y="-530" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="69" y="-486" /></Offset></Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
@@ -950,6 +996,8 @@
 							MBB_Options.AltExpandDirection = 4;
 						end
 						MBB_Options.ButtonScale = MBB_OptionsFrame_ButtonScaleSlider:GetValue();
+						MBB_Options.ManualButtonOrder = MBB_OptionsFrame_ManualOrder:GetChecked() and 1 or 0;
+						MBB_Options.ReverseAlphabeticalOrder = MBB_OptionsFrame_ReverseOrder:GetChecked() and 1 or 0;
 						MBB_SetPositions();
 					</OnClick>
 				</Scripts>
@@ -959,11 +1007,7 @@
 					<AbsDimension x="145" y="23" />
 				</Size>
 				<Anchors>
-					<Anchor point="TOP" relativeTo="$parent">
-						<Offset>
-							<AbsDimension x="90" y="-530" />
-						</Offset>
-					</Anchor>
+					<Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="266" y="-486" /></Offset></Anchor>
 				</Anchors>
 				<Scripts>
 					<OnClick>
@@ -980,6 +1024,17 @@
 			<OnShow>
 				MBB_RestoreOptionsFramePosition();
 				MBB_OptionsFrame_HeaderText:SetText("MBB" .. " " .. MBB_OPTIONS_HEADER);
+				MBB_OptionsFrame_VersionText:SetText((MBB_ABOUT_VERSION or "Version:") .. " " .. MBB_Version);
+				MBB_OptionsFrame_VersionText:SetShown(not self.MBBEmbedded);
+				local sortButton = MBB_OptionsFrame_ManualOrder;
+				if MBB_Options.ManualButtonOrder == 0 then
+					if MBB_Options.ReverseAlphabeticalOrder == 1 then
+						sortButton = MBB_OptionsFrame_ReverseOrder;
+					else
+						sortButton = MBB_OptionsFrame_AscendingOrder;
+					end
+				end
+				MBB_SelectSortOrder(sortButton);
 				MBB_UpdateAltRadioButtons();
 				MBB_UpdatePositionOptionControls();
                 if MBB_ProfileDropdown_Refresh then MBB_ProfileDropdown_Refresh(); end

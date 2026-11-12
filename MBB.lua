@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "@project-version@"
+local sourceVersion = "v2.0.5"
 
 -- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the
@@ -50,6 +50,16 @@ MBB_IsShown = 0;
 MBB_FuBar_MinimapContainer = "FuBarPlugin-MinimapContainer-2.0";
 
 MBB_Buttons = {};
+local keepBarOpen = false;
+
+local function IsPinned(name)
+    return MBB_Options and MBB_Options.PinnedButtons and MBB_Options.PinnedButtons[name] == true;
+end
+
+local function SetBarHeld(held)
+    keepBarOpen = held;
+    MBB_MinimapButtonFrame_HoldMark:SetShown(held);
+end
 MBB_Exclude = {};
 
 MBB_DefaultOptions = {
@@ -61,6 +71,9 @@ MBB_DefaultOptions = {
 	["MaxButtonsPerLine"] = 0,
 	["AltExpandDirection"] = 4,
 	["ButtonScale"] = 1.0,
+	["ManualButtonOrder"] = 1,
+	["PinnedButtons"] = {},
+	["ReverseAlphabeticalOrder"] = 0,
 	["DetachedButtonLocked"] = 0,
 	["SnapToScreenEdges"] = 0,
 	["OptionsFramePos"] = {"CENTER", "CENTER", 0, 0}
@@ -530,6 +543,7 @@ function MBB_Profile_Activate(name, quiet)
     if MBB_SetButtonPosition then MBB_SetButtonPosition(); end
     if MBB_ButtonOrder_ApplyToCollected then MBB_ButtonOrder_ApplyToCollected(); end
     if MBB_SetPositions then MBB_SetPositions(); end
+    if MBB_IsShown == 0 then MBB_HideButtons(); end
     if MBB_ButtonManager_Refresh then MBB_ButtonManager_Refresh(); end
     if MBB_ProfileManager_Refresh then MBB_ProfileManager_Refresh(); end
     MBB_Profile_RefreshOptionsWindow();
@@ -867,8 +881,15 @@ local function MBB_ButtonManager_FinishDrag()
     end
 end
 
+local function MBB_GetButtonDisplayName(name)
+    if name == "ExpansionLandingPageMinimapButton" then
+        return MBB_BUTTON_EXPANSION_OVERVIEW;
+    end
+    return (name:gsub("^LibDBIcon10_", ""));
+end
+
 local function MBB_ButtonManager_ShortenName(name)
-    name = tostring(name or "")
+    name = MBB_GetButtonDisplayName(name);
     -- Frame names are normally ASCII. Keep the list compact and show the full
     -- value in the tooltip when a name is longer than the visual panel.
     local maxChars = 27
@@ -924,7 +945,7 @@ local function MBB_ButtonManager_CreateRow(index)
     -- Button name panel: gives every entry a clearer, button-like visual target
     -- while keeping the whole row available for drag-and-drop.
     row.nameBox = CreateFrame("Frame", nil, row, "BackdropTemplate");
-    row.nameBox:SetSize(184, 22);
+    row.nameBox:SetSize(162, 22);
     row.nameBox:SetPoint("LEFT", row.dragText, "RIGHT", 2, 0);
     if row.nameBox.SetBackdrop then
         row.nameBox:SetBackdrop({
@@ -957,6 +978,26 @@ local function MBB_ButtonManager_CreateRow(index)
     row.up:SetSize(24, 20);
     row.up:SetPoint("RIGHT", row.down, "LEFT", -2, 0);
     row.up:SetText("^");
+
+    row.pin = CreateFrame("Button", nil, row, "UIPanelButtonTemplate");
+    row.pin:SetSize(23, 20);
+    row.pin:SetPoint("RIGHT", row.up, "LEFT", -2, 0);
+    row.pin:SetText("+");
+    row.pin:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT");
+        GameTooltip:SetText(IsPinned(row.buttonName) and MBB_MANAGER_UNPIN or MBB_MANAGER_PIN);
+        GameTooltip:Show();
+    end);
+    row.pin:SetScript("OnLeave", function() GameTooltip:Hide(); end);
+    row.pin:SetScript("OnClick", function()
+        local name = row.buttonName;
+        if MBB_ButtonManager_IsInCombat() or not MBB_IsInArray(MBB_Buttons, name) then return; end
+        MBB_Options.PinnedButtons[name] = not IsPinned(name) or nil;
+        MBB_SetPositions();
+        if MBB_IsShown == 0 then MBB_HideButtons(); end
+        MBB_ButtonManager_Refresh();
+        GameTooltip:Hide();
+    end);
 
     row.check:SetScript("OnClick", function(self)
         local currentName = row.buttonName;
@@ -998,7 +1039,7 @@ local function MBB_ButtonManager_CreateRow(index)
     row.down:SetScript("OnLeave", function() GameTooltip:Hide(); end);
 
     row:SetScript("OnDragStart", function(self)
-        if MBB_ButtonManager_IsInCombat() or not self.buttonName then return end
+        if MBB_ButtonManager_IsInCombat() or not MBB_ButtonManagerFrame.canReorder or not self.buttonName then return end
         MBB_ButtonManagerDragName = self.buttonName;
         MBB_ButtonManagerDropIndex = self.managerIndex;
         GameTooltip:Hide();
@@ -1039,7 +1080,18 @@ end
 function MBB_ButtonManager_Refresh()
     if not MBB_ButtonManagerFrame or not MBB_ButtonManagerScrollChild then return end
 
-    local names = MBB_ButtonManager_GetKnownButtons();
+    local manager = MBB_ButtonManagerFrame;
+    local query = manager.search:GetText():lower();
+    local filter = manager.filterMode;
+    local allNames = MBB_ButtonManager_GetKnownButtons();
+    local names = {};
+    manager.canReorder = query == "" and filter == 1;
+    for _, name in ipairs(allNames) do
+        local managed = MBB_IsInArray(MBB_Buttons, name) ~= nil;
+        if (filter == 1 or managed == (filter == 2)) and (MBB_GetButtonDisplayName(name):lower():find(query, 1, true) or name:lower():find(query, 1, true)) then
+            names[#names + 1] = name;
+        end
+    end
     local inCombat = MBB_ButtonManager_IsInCombat();
 
     if MBB_ButtonManagerCountText then
@@ -1057,7 +1109,8 @@ function MBB_ButtonManager_Refresh()
 
     if MBB_ButtonManagerEmptyText then
         if #names == 0 then
-            MBB_ButtonManagerEmptyText:SetText(MBB_MANAGER_EMPTY or "No buttons detected yet. Use Rescan.");
+            MBB_ButtonManagerEmptyText:SetText(#allNames > 0 and MBB_MANAGER_NO_MATCHES
+                or MBB_MANAGER_EMPTY or "No buttons detected yet. Use Rescan.");
             MBB_ButtonManagerEmptyText:Show();
         else
             MBB_ButtonManagerEmptyText:Hide();
@@ -1074,6 +1127,8 @@ function MBB_ButtonManager_Refresh()
             row.managerIndex = index;
             row.nameText:SetText(MBB_ButtonManager_ShortenName(name));
             row.check:SetChecked(managed);
+            row.pin:SetText(IsPinned(name) and "-" or "+");
+            row.pin:SetEnabled(not inCombat and button ~= nil and managed);
             row.nameText:SetTextColor(1, 1, 1);
             MBB_ButtonManager_SetNameBoxState(row, managed and "managed" or "minimap");
 
@@ -1094,8 +1149,8 @@ function MBB_ButtonManager_Refresh()
             else
                 row.statusText:SetText(managed and (MBB_MANAGER_ENABLED or "In MBB") or (MBB_MANAGER_DISABLED or "On Minimap"));
                 row.check:Enable();
-                if index > 1 then row.up:Enable(); else row.up:Disable(); end
-                if index < #names then row.down:Enable(); else row.down:Disable(); end
+                row.up:SetEnabled(manager.canReorder and index > 1);
+                row.down:SetEnabled(manager.canReorder and index < #names);
             end
 
             row:Show();
@@ -1145,24 +1200,54 @@ function MBB_ButtonManager_Create()
     orderHelp:SetJustifyH("LEFT");
     orderHelp:SetText(MBB_MANAGER_ORDER_HELP or "Drag a row or use the arrows to change the button order.");
 
+    local search = CreateFrame("EditBox", nil, frame, "InputBoxTemplate");
+    search:SetSize(220, 22);
+    search:SetPoint("TOPLEFT", frame, "TOPLEFT", 28, -94);
+    search:SetAutoFocus(false);
+    frame.search = search;
+    local hint = search:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall");
+    hint:SetPoint("LEFT", 3, 0);
+    hint:SetText(MBB_MANAGER_SEARCH);
+
+    local filters = { MBB_MANAGER_FILTER_ALL, MBB_MANAGER_ENABLED or "In MBB",
+        MBB_MANAGER_FILTER_EXCLUDED };
+    local filter = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate");
+    filter:SetSize(146, 22);
+    filter:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -22, -94);
+    frame.filterMode = 1;
+    filter:SetText(filters[1]);
+    filter:SetScript("OnClick", function(self)
+        frame.filterMode = frame.filterMode % #filters + 1;
+        self:SetText(filters[frame.filterMode]);
+        MBB_ButtonManagerScrollFrame:SetVerticalScroll(0);
+        MBB_ButtonManager_Refresh();
+    end);
+    search:SetScript("OnTextChanged", function(self)
+        hint:SetShown(self:GetText() == "");
+        MBB_ButtonManagerScrollFrame:SetVerticalScroll(0);
+        MBB_ButtonManager_Refresh();
+    end);
+    search:SetScript("OnEscapePressed", function(self) self:ClearFocus(); end);
+    search:SetScript("OnEnterPressed", function(self) self:ClearFocus(); end);
+
     local countText = frame:CreateFontString("MBB_ButtonManagerCountText", "OVERLAY", "GameFontNormalSmall");
-    countText:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -94);
+    countText:SetPoint("TOPLEFT", frame, "TOPLEFT", 22, -124);
 
     local combatText = frame:CreateFontString("MBB_ButtonManagerCombatText", "OVERLAY", "GameFontNormalSmall");
-    combatText:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -22, -94);
+    combatText:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -22, -124);
     combatText:SetTextColor(1, 0.35, 0.35);
     combatText:Hide();
 
     local headerName = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
-    headerName:SetPoint("TOPLEFT", frame, "TOPLEFT", 70, -118);
+    headerName:SetPoint("TOPLEFT", frame, "TOPLEFT", 70, -148);
     headerName:SetText(MBB_MANAGER_COLUMN_BUTTON or "Button");
 
     local headerStatus = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall");
-    headerStatus:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -42, -118);
+    headerStatus:SetPoint("TOPRIGHT", frame, "TOPRIGHT", -42, -148);
     headerStatus:SetText(MBB_MANAGER_COLUMN_STATUS or "Status");
 
     local scroll = CreateFrame("ScrollFrame", "MBB_ButtonManagerScrollFrame", frame, "UIPanelScrollFrameTemplate");
-    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -136);
+    scroll:SetPoint("TOPLEFT", frame, "TOPLEFT", 20, -166);
     scroll:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -42, 60);
 
     local content = CreateFrame("Frame", "MBB_ButtonManagerScrollChild", scroll);
@@ -1785,7 +1870,7 @@ function MBB_PrepareButton(name)
 				if( not MBB_IsInArray(MBB_Exclude, child:GetName()) ) then
 					MBB_SetPositions();
 				end
-				if( MBB_IsInArray(MBB_Exclude, child:GetName()) or MBB_IsShown == 1 ) then
+				if( MBB_IsInArray(MBB_Exclude, child:GetName()) or MBB_IsShown == 1 or IsPinned(child:GetName()) ) then
 					parent.oshow(select(1, ...));
 					--child.oshow(child);
 				end
@@ -1813,7 +1898,7 @@ function MBB_PrepareButton(name)
 			if( not MBB_IsInArray(MBB_Exclude, innerframe:GetName()) ) then
 				MBB_SetPositions();
 			end
-			if( MBB_IsInArray(MBB_Exclude, innerframe:GetName()) or MBB_IsShown == 1 ) then
+			if( MBB_IsInArray(MBB_Exclude, innerframe:GetName()) or MBB_IsShown == 1 or IsPinned(innerframe:GetName()) ) then
 				--[[if( innerframe.hasParentFrame ) then
 					local parent = innerframe:GetParent();
 					parent.oshow(parent);
@@ -1941,7 +2026,7 @@ function MBB_AddButton(name)
 	child.ClearAllPoints = function() end;
 	child.osetpoint = child.SetPoint;
 	child.SetPoint = function() end;
-	if( MBB_IsShown == 0 ) then
+	if( MBB_IsShown == 0 and not IsPinned(name) ) then
 		if( child.hasParentFrame ) then
 			local parent = child:GetParent();
 			child.oshow(child);
@@ -1995,6 +2080,20 @@ function MBB_RestoreButton(name)
 	end
 end
 
+function MBB_SelectSortOrder(selected)
+    local manual = MBB_OptionsFrame_ManualOrder;
+    local ascending = MBB_OptionsFrame_AscendingOrder;
+    local descending = MBB_OptionsFrame_ReverseOrder;
+    manual:SetChecked(selected == manual);
+    ascending:SetChecked(selected == ascending);
+    descending:SetChecked(selected == descending);
+end
+
+local function MBB_GetAlphabeticalButtonKey(name)
+    local displayName = MBB_GetButtonDisplayName(name);
+    return string.lower(displayName);
+end
+
 function MBB_SetPositions()
 	MBB_ButtonOrder_ApplyToCollected();
 	MBB_MinimapButtonFrame:SetScale(MBB_Options.ButtonScale or 1.0);
@@ -2011,11 +2110,58 @@ function MBB_SetPositions()
 		[4] = {0, -5}
 	};
 	
+	local layoutButtons = MBB_Buttons;
+	if( MBB_Options.ManualButtonOrder == 0 ) then
+		layoutButtons = {};
+		for _, name in ipairs(MBB_Buttons) do
+			layoutButtons[#layoutButtons + 1] = name;
+		end
+		local descending = MBB_Options.ReverseAlphabeticalOrder == 1;
+		table.sort(layoutButtons, function(a, b)
+			local aKey = MBB_GetAlphabeticalButtonKey(a);
+			local bKey = MBB_GetAlphabeticalButtonKey(b);
+			if aKey == bKey then return a < b; end
+			if descending then return aKey > bKey; end
+			return aKey < bKey;
+		end);
+	end
+	if( MBB_Options.ManualButtonOrder == 0 and MBB_Options.ExpandDirection == 1 ) then
+		local visibleButtons = {};
+		for _, name in ipairs(layoutButtons) do
+			local button = _G[name];
+			if( button.isvisible and (not button.hasParentFrame or button.parentisvisible) ) then
+				visibleButtons[#visibleButtons + 1] = name;
+			end
+		end
+
+		-- Place each visible row from its right edge, keeping its reading order.
+		layoutButtons = {};
+		local lineSize = MBB_Options.MaxButtonsPerLine;
+		if( lineSize <= 0 ) then lineSize = math.max(1, #visibleButtons); end
+		for first = 1, #visibleButtons, lineSize do
+			local last = math.min(first + lineSize - 1, #visibleButtons);
+			for index = last, first, -1 do
+				layoutButtons[#layoutButtons + 1] = visibleButtons[index];
+			end
+		end
+	end
+
+    if next(MBB_Options.PinnedButtons) then
+        local ordered = {};
+        for _, name in ipairs(layoutButtons) do
+            if IsPinned(name) then ordered[#ordered + 1] = name; end
+        end
+        for _, name in ipairs(layoutButtons) do
+            if not IsPinned(name) then ordered[#ordered + 1] = name; end
+        end
+        layoutButtons = ordered;
+    end
+
 	local pos = {0, 0};
 	local parentid = 0;
 	local firstid = 1;
 	local count = 1;
-	for i,name in ipairs(MBB_Buttons) do
+	for i,name in ipairs(layoutButtons) do
 		local positionframe = _G[name]
 		if( not positionframe.hasParentFrame ) then
 			positionframe.parentisvisible = true;
@@ -2029,7 +2175,7 @@ function MBB_SetPositions()
 			if( parentid==0 ) then
 				parent = MBB_MinimapButtonFrame;
 			else
-				parent = _G[MBB_Buttons[parentid]]
+				parent = _G[layoutButtons[parentid]]
 			end
 			
 			if( not MBB_IsInArray(MBB_IgnoreSize, name) ) then
@@ -2045,7 +2191,7 @@ function MBB_SetPositions()
 			local direction;
 			
 			if( MBB_Options.MaxButtonsPerLine > 0 and count > MBB_Options.MaxButtonsPerLine ) then
-				parent = _G[MBB_Buttons[firstid]]
+				parent = _G[layoutButtons[firstid]]
 				direction = {directions[MBB_Options.AltExpandDirection][1], directions[MBB_Options.AltExpandDirection][2]};
 				if( MBB_ExtraSize[name] or MBB_IsInArray(MBB_IgnoreSize, name) or MBB_ExtraSize[parent:GetName()] or MBB_IsInArray(MBB_IgnoreSize, parent:GetName()) ) then
 					pos = offsets[MBB_Options.AltExpandDirection];
@@ -2073,6 +2219,16 @@ function MBB_SetPositions()
 end
 
 function MBB_OnClick(arg1)
+    if arg1 == "MiddleButton" then
+        if keepBarOpen then
+            SetBarHeld(false);
+            MBB_ShowTimeout = 0;
+        else
+            if MBB_IsShown == 0 then MBB_OnClick("LeftButton"); end
+            SetBarHeld(true);
+        end
+        return;
+    end
 	if( arg1 and arg1 == "RightButton" and IsControlKeyDown() ) then
 		if( MBB_Options.AttachToMinimap == 1 ) then
 			--[[local xpos,ypos = GetCursorPosition();
@@ -2124,10 +2280,21 @@ function MBB_OnClick(arg1)
 end
 
 function MBB_HideButtons()
+    SetBarHeld(false);
 	MBB_ShowTimeout = -1;
 	for i,name in ipairs(MBB_Buttons) do
 		local buttonhideframe = _G[name]
-		if( buttonhideframe.hasParentFrame ) then
+        if IsPinned(name) then
+            if buttonhideframe.isvisible then
+                if buttonhideframe.hasParentFrame and buttonhideframe.parentisvisible then
+                    local parent = buttonhideframe:GetParent();
+                    if parent.oshow then parent.oshow(parent); end
+                    buttonhideframe.oshow(buttonhideframe);
+                elseif not buttonhideframe.hasParentFrame then
+                    buttonhideframe.oshow(buttonhideframe);
+                end
+            end
+		elseif( buttonhideframe.hasParentFrame ) then
 			local parent = buttonhideframe:GetParent();
 			if( parent.ohide ) then
 				parent.ohide(parent);
@@ -2217,7 +2384,7 @@ function MBB_OnUpdate(elapsed)
 		MBB_MinimapButtonFrame:SetPoint("TOPLEFT", Minimap, "TOPLEFT", 83-(cos(angle)*99), -83+(sin(angle)*99));
 	end
 	
-	if( MBB_Options.CollapseTimeout and MBB_Options.CollapseTimeout ~= 0 ) then
+	if( not keepBarOpen and MBB_Options.CollapseTimeout and MBB_Options.CollapseTimeout ~= 0 ) then
 		if( MBB_ShowTimeout >= MBB_Options.CollapseTimeout and MBB_IsShown == 1 ) then
 			MBB_HideButtons();
 		end
@@ -2421,6 +2588,11 @@ function MBB_UpdatePositionOptionControls()
     local detached = MBB_Options and MBB_Options.AttachToMinimap == 0
     local lockCheck = _G["MBB_OptionsFrame_LockDetachedCheck"]
     local snapCheck = _G["MBB_OptionsFrame_SnapEdgesCheck"]
+
+    local resetButton = MBB_OptionsFrame_ResetPositionButton;
+    if resetButton then
+        resetButton:SetEnabled(not (InCombatLockdown and InCombatLockdown()));
+    end
 
     if lockCheck then
         lockCheck:SetChecked(MBB_Options and MBB_Options.DetachedButtonLocked == 1)

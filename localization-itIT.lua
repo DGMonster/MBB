@@ -117,4 +117,22 @@ if( GetLocale() == "itIT" ) then
 	MBB_PROFILE_RENAME_DEFAULT = "MBB: Il profilo predefinito non può essere rinominato.";
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r: apre la gestione dei profili";
 
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+    BINDING_NAME_MBB_REBORN_TOGGLE = "Mostra o nascondi la barra della minimappa";
+    BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "Apri le impostazioni di MBB";
+    MBB_OPTIONS_MANUAL_ORDER = "Manuale";
+    MBB_OPTIONS_SECTION_BAR = "Barra";
+    MBB_OPTIONS_SECTION_LAYOUT = "Disposizione";
+    MBB_OPTIONS_SECTION_POSITION = "Posizione";
+    MBB_OPTIONS_SECTION_PROFILE = "Profilo";
+    MBB_OPTIONS_SECTION_SORT = "Ordinamento";
+    MBB_MANAGER_SEARCH = "Cerca pulsanti";
+    MBB_MANAGER_FILTER_ALL = "Tutti i pulsanti";
+    MBB_MANAGER_FILTER_EXCLUDED = "Esclusi";
+    MBB_MANAGER_NO_MATCHES = "Nessun pulsante corrispondente.";
+    MBB_OPTIONS_RESET_POSITION = "Ripristina posizione";
+    MBB_MANAGER_PIN = "Fissa il pulsante";
+    MBB_MANAGER_UNPIN = "Sgancia il pulsante";
+    MBB_TOOLTIP_HOLD_BAR = "Clic centrale per tenere aperta o sbloccare la barra.";
+    MBB_BUTTON_EXPANSION_OVERVIEW = "Panoramica di WoW";
 end

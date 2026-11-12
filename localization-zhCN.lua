@@ -117,4 +117,22 @@ MBB_OPTIONS_DETACH_COMBAT = "战斗中无法更改。";
 	MBB_PROFILE_RENAME_DEFAULT = "MBB：默认配置方案不能重命名。";
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r：打开配置档管理器";
 
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+    BINDING_NAME_MBB_REBORN_TOGGLE = "展开或收起小地图按钮栏";
+    BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "打开 MBB 设置";
+    MBB_OPTIONS_MANUAL_ORDER = "手动";
+    MBB_OPTIONS_SECTION_BAR = "按钮栏";
+    MBB_OPTIONS_SECTION_LAYOUT = "布局";
+    MBB_OPTIONS_SECTION_POSITION = "位置";
+    MBB_OPTIONS_SECTION_PROFILE = "配置方案";
+    MBB_OPTIONS_SECTION_SORT = "排序";
+    MBB_MANAGER_SEARCH = "搜索按钮";
+    MBB_MANAGER_FILTER_ALL = "所有按钮";
+    MBB_MANAGER_FILTER_EXCLUDED = "已排除";
+    MBB_MANAGER_NO_MATCHES = "没有匹配的按钮。";
+    MBB_OPTIONS_RESET_POSITION = "重置位置";
+    MBB_MANAGER_PIN = "固定按钮";
+    MBB_MANAGER_UNPIN = "取消固定按钮";
+    MBB_TOOLTIP_HOLD_BAR = "单击鼠标中键可保持按钮栏展开或解除固定。";
+    MBB_BUTTON_EXPANSION_OVERVIEW = "魔兽世界总览";
 end

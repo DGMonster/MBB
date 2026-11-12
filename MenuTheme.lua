@@ -103,8 +103,9 @@ local function StylePanel(frame, r, g, b, tk, gui)
         frame:HookScript("OnShow", function() Refresh(); end);
     end
     frame:SetBackdrop(backdrop);
-    frame:SetBackdropColor(0.055, 0.055, 0.055, 0.96);
-    frame:SetBackdropBorderColor(0.3, 0.3, 0.3, 1);
+    local embedded = frame.MBBEmbedded;
+    frame:SetBackdropColor(0.055, 0.055, 0.055, embedded and 0 or 0.96);
+    frame:SetBackdropBorderColor(0.3, 0.3, 0.3, embedded and 0 or 1);
 
     if gui and not frame.MBBThemeDialog then
         local background = CreateFrame("Frame", nil, frame);
@@ -118,6 +119,7 @@ local function StylePanel(frame, r, g, b, tk, gui)
     end
     if frame.MBBThemeDialog then
         frame.MBBThemeDialog:SetFrameStrata(frame:GetFrameStrata());
+        frame.MBBThemeDialog:SetShown(not embedded);
     end
 
     if not frame.MBBThemeAccent then
@@ -129,6 +131,7 @@ local function StylePanel(frame, r, g, b, tk, gui)
         frame.MBBThemeAccent = accent;
     end
     frame.MBBThemeAccent:SetVertexColor(r, g, b);
+    frame.MBBThemeAccent:SetShown(not embedded);
     for _, region in ipairs({ frame:GetRegions() }) do
         if region:IsObjectType("FontString") then
             local text = region:GetText();
@@ -141,10 +144,35 @@ local function StylePanel(frame, r, g, b, tk, gui)
     if frame == _G.MBB_OptionsFrame then
         if _G.MBB_OptionsFrame_Header then _G.MBB_OptionsFrame_Header:Hide(); end
         if _G.MBB_OptionsFrame_HeaderText then
-            _G.MBB_OptionsFrame_HeaderText:SetTextColor(r, g, b);
+            local title = _G.MBB_OptionsFrame_HeaderText;
+            if not frame.MBBTitlePlaque then
+                local plaque = frame:CreateTexture(nil, "ARTWORK");
+                plaque:SetPoint("TOPLEFT", frame, "TOPLEFT", -4, 7);
+                plaque:SetSize(172, 28);
+                frame.MBBTitlePlaque = plaque;
+            end
+            local plaque = frame.MBBTitlePlaque;
+            plaque:SetShown(tk ~= nil and not embedded);
+            title:ClearAllPoints();
+            if tk and not embedded then
+                plaque:SetTexture(tk:GetAssetFilePath("Textures\\DialogBox\\TitleBar"));
+                plaque:SetVertexColor(r, g, b);
+                title:SetPoint("LEFT", plaque, "LEFT", 12, 0);
+                title:SetDrawLayer("OVERLAY");
+                title:SetTextColor(1, 1, 1);
+                frame.MBBThemeAccent:Hide();
+            else
+                title:SetPoint("TOP", frame, "TOP", 0, -3);
+                title:SetTextColor(r, g, b);
+            end
+            _G.MBB_OptionsFrame_HeaderText:SetShown(not embedded);
         end
     end
     StyleControls(frame, r, g, b, tk);
+    if embedded then
+        StyleButton(MBB_OptionsFrame_OKButton, r, g, b, tk);
+        StyleButton(MBB_OptionsFrame_CancelButton, r, g, b, tk);
+    end
 end
 
 Refresh = function()

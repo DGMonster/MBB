@@ -115,4 +115,22 @@ if( GetLocale() == "frFR" ) then
 	MBB_PROFILE_RENAME_DEFAULT = "MBB : le profil par défaut ne peut pas être renommé.";
 	MBB_HELP_PROFILE = "  |c00ffffffprofiles|r : ouvre la gestion des profils";
 
+    BINDING_HEADER_MBB_REBORN = "MinimapButtonBag Reborn";
+    BINDING_NAME_MBB_REBORN_TOGGLE = "Afficher ou masquer la barre de la minicarte";
+    BINDING_NAME_MBB_REBORN_OPEN_OPTIONS = "Ouvrir les paramètres de MBB";
+    MBB_OPTIONS_MANUAL_ORDER = "Manuel";
+    MBB_OPTIONS_SECTION_BAR = "Barre";
+    MBB_OPTIONS_SECTION_LAYOUT = "Disposition";
+    MBB_OPTIONS_SECTION_POSITION = "Position";
+    MBB_OPTIONS_SECTION_PROFILE = "Profil";
+    MBB_OPTIONS_SECTION_SORT = "Tri";
+    MBB_MANAGER_SEARCH = "Rechercher des boutons";
+    MBB_MANAGER_FILTER_ALL = "Tous les boutons";
+    MBB_MANAGER_FILTER_EXCLUDED = "Exclus";
+    MBB_MANAGER_NO_MATCHES = "Aucun bouton correspondant.";
+    MBB_OPTIONS_RESET_POSITION = "Réinitialiser la position";
+    MBB_MANAGER_PIN = "Épingler le bouton";
+    MBB_MANAGER_UNPIN = "Désépingler le bouton";
+    MBB_TOOLTIP_HOLD_BAR = "Clic du milieu pour maintenir la barre ouverte ou la libérer.";
+    MBB_BUTTON_EXPANSION_OVERVIEW = "Aperçu de WoW";
 end
