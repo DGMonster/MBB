@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.6"
+local sourceVersion = "v2.0.7-rc"
 
 -- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the
@@ -2022,6 +2022,10 @@ function MBB_AddButton(name)
 	end
 	child.osize = {child:GetHeight(),child:GetWidth()};
 	child.oscale = child:GetScale();
+    if child.SetIgnoreParentScale and child.IsIgnoringParentScale then
+        child.mbbOriginalIgnoreParentScale = child:IsIgnoringParentScale();
+        child:SetIgnoreParentScale(true);
+    end
 	child.oclearallpoints = child.ClearAllPoints;
 	child.ClearAllPoints = function() end;
 	child.osetpoint = child.SetPoint;
@@ -2058,6 +2062,10 @@ function MBB_RestoreButton(name)
 	button:SetHeight(button.osize[1]);
 	button:SetWidth(button.osize[2]);
 	if button.oscale then button:SetScale(button.oscale); end
+    if button.mbbOriginalIgnoreParentScale ~= nil then
+        button:SetIgnoreParentScale(button.mbbOriginalIgnoreParentScale);
+        button.mbbOriginalIgnoreParentScale = nil;
+    end
 	button.ClearAllPoints = button.oclearallpoints;
 	button.SetPoint = button.osetpoint;
 	MBB_Debug("EVENT Restoring Button");
@@ -2094,9 +2102,52 @@ local function MBB_GetAlphabeticalButtonKey(name)
     return string.lower(displayName);
 end
 
+local previewButtonScale;
+local previewOpenedBar = false;
+local previewRestorePending = false;
+
+function MBB_PreviewButtonScale(value)
+    if not MBB_Options or not MBB_OptionsFrame or not MBB_OptionsFrame:IsShown() then return end
+    if InCombatLockdown() then return end
+    if type(value) ~= "number" then return end
+    value = math.max(0.75, math.min(1.50, value));
+    if not previewButtonScale and math.abs(value - (MBB_Options.ButtonScale or 1)) < 0.001 then return end
+    previewButtonScale = value;
+    MBB_SetPositions();
+    if MBB_IsShown == 0 then
+        previewOpenedBar = true;
+        MBB_OnClick("LeftButton");
+    end
+end
+
+function MBB_ClearButtonScalePreview()
+    if not previewButtonScale then return end
+    previewButtonScale = nil;
+    if InCombatLockdown() then
+        previewRestorePending = true;
+        return;
+    end
+    MBB_SetPositions();
+    if previewOpenedBar then MBB_HideButtons(); end
+    previewOpenedBar = false;
+end
+
+local previewEvents = CreateFrame("Frame");
+previewEvents:RegisterEvent("PLAYER_REGEN_ENABLED");
+previewEvents:SetScript("OnEvent", function()
+    if not previewRestorePending then return end
+    previewRestorePending = false;
+    MBB_SetPositions();
+    if previewOpenedBar then MBB_HideButtons(); end
+    previewOpenedBar = false;
+end);
+
 function MBB_SetPositions()
+    if MBB_MinimapButtonFrame.SetIgnoreParentScale then
+        MBB_MinimapButtonFrame:SetIgnoreParentScale(true);
+    end
 	MBB_ButtonOrder_ApplyToCollected();
-	MBB_MinimapButtonFrame:SetScale(MBB_Options.ButtonScale or 1.0);
+	MBB_MinimapButtonFrame:SetScale(previewButtonScale or MBB_Options.ButtonScale or 1.0);
 	local directions = {
 		[1] = {"RIGHT", "LEFT"},
 		[2] = {"BOTTOM", "TOP"},
@@ -2169,7 +2220,7 @@ function MBB_SetPositions()
 		if( positionframe.isvisible and positionframe.parentisvisible ) then
 			-- Apply user-selected button scale while preserving each addon button's original scale.
 			local baseScale = positionframe.oscale or 1
-			positionframe:SetScale(baseScale * (MBB_Options.ButtonScale or 1.0));
+			positionframe:SetScale(baseScale * (previewButtonScale or MBB_Options.ButtonScale or 1.0));
 
 			local parent;
 			if( parentid==0 ) then
@@ -2385,7 +2436,7 @@ function MBB_OnUpdate(elapsed)
 	end
 	
 	if( not keepBarOpen and MBB_Options.CollapseTimeout and MBB_Options.CollapseTimeout ~= 0 ) then
-		if( MBB_ShowTimeout >= MBB_Options.CollapseTimeout and MBB_IsShown == 1 ) then
+		if( not previewButtonScale and MBB_ShowTimeout >= MBB_Options.CollapseTimeout and MBB_IsShown == 1 ) then
 			MBB_HideButtons();
 		end
 		if( MBB_ShowTimeout ~= -1 ) then

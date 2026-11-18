@@ -1,5 +1,32 @@
 # Changelog
 
+## v2.0.7-rc
+
+### English
+
+- Preview button size immediately while dragging the size slider. The collected-button bar opens for the preview and stays visible while adjusting.
+- Confirm the size with OK. Cancel or close the settings to restore the saved size.
+- Keep collected buttons and the MBB launcher independent of minimap parent scaling so MBB controls their size.
+- Restore the original parent-scale behavior when returning a collected button to the minimap.
+- Defer preview cleanup until combat ends if settings close during combat.
+
+MUI Reborn's matching change stops its own addon-button scaling while MBB is active. Install the corresponding MUI update for the complete integration.
+
+Lua syntax, XML and package contents were checked. In-game confirmation across supported clients is pending.
+
+### Deutsch
+
+- Die Button-Größe wird beim Ziehen am Größenregler sofort angezeigt. Die Sammelleiste öffnet sich zur Vorschau und bleibt während der Anpassung sichtbar.
+- OK übernimmt die Größe. Abbrechen oder Schließen der Einstellungen stellt die gespeicherte Größe wieder her.
+- Eingesammelte Buttons und der MBB-Hauptbutton sind von der Skalierung ihres Minimap-Elternrahmens unabhängig. MBB bestimmt ihre Größe.
+- Beim Zurückgeben eines Buttons an die Minimap wird dessen ursprüngliches Verhalten zur Elternskalierung wiederhergestellt.
+- Wird die Vorschau im Kampf geschlossen, erfolgt das Zurücksetzen nach Kampfende.
+
+Die passende Änderung in MUI Reborn setzt dessen eigene Addon-Button-Skalierung bei aktivem MBB aus. Für das vollständige Zusammenspiel wird das entsprechende MUI-Update benötigt.
+
+Lua-Syntax, XML und Paketinhalt wurden geprüft. Die Bestätigung im Spiel auf den unterstützten Clients steht noch aus.
+
+
 ## v2.0.6
 
 ### English

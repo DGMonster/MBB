@@ -846,6 +846,7 @@
         </OnShow>
         <OnValueChanged>
             local value = math.floor((self:GetValue() * 100) + 0.5) / 100;
+            MBB_PreviewButtonScale(value);
             local label = _G[self:GetName().."Text"];
             if label then
                 label:SetText(math.floor(value * 100 + 0.5) .. "%");
@@ -1039,6 +1040,7 @@
 				MBB_UpdatePositionOptionControls();
                 if MBB_ProfileDropdown_Refresh then MBB_ProfileDropdown_Refresh(); end
 			</OnShow>
+            <OnHide>MBB_ClearButtonScalePreview();</OnHide>
 			<OnDragStart>
 				if not self.MBBEmbedded then self:StartMoving(); end
 			</OnDragStart>
