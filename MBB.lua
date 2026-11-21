@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.7-rc"
+local sourceVersion = "v2.0.8-rc"
 
 -- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the
@@ -2022,10 +2022,6 @@ function MBB_AddButton(name)
 	end
 	child.osize = {child:GetHeight(),child:GetWidth()};
 	child.oscale = child:GetScale();
-    if child.SetIgnoreParentScale and child.IsIgnoringParentScale then
-        child.mbbOriginalIgnoreParentScale = child:IsIgnoringParentScale();
-        child:SetIgnoreParentScale(true);
-    end
 	child.oclearallpoints = child.ClearAllPoints;
 	child.ClearAllPoints = function() end;
 	child.osetpoint = child.SetPoint;
@@ -2062,10 +2058,6 @@ function MBB_RestoreButton(name)
 	button:SetHeight(button.osize[1]);
 	button:SetWidth(button.osize[2]);
 	if button.oscale then button:SetScale(button.oscale); end
-    if button.mbbOriginalIgnoreParentScale ~= nil then
-        button:SetIgnoreParentScale(button.mbbOriginalIgnoreParentScale);
-        button.mbbOriginalIgnoreParentScale = nil;
-    end
 	button.ClearAllPoints = button.oclearallpoints;
 	button.SetPoint = button.osetpoint;
 	MBB_Debug("EVENT Restoring Button");
@@ -2110,7 +2102,7 @@ function MBB_PreviewButtonScale(value)
     if not MBB_Options or not MBB_OptionsFrame or not MBB_OptionsFrame:IsShown() then return end
     if InCombatLockdown() then return end
     if type(value) ~= "number" then return end
-    value = math.max(0.75, math.min(1.50, value));
+    value = math.max(0.50, math.min(1.50, value));
     if not previewButtonScale and math.abs(value - (MBB_Options.ButtonScale or 1)) < 0.001 then return end
     previewButtonScale = value;
     MBB_SetPositions();
@@ -2142,12 +2134,22 @@ previewEvents:SetScript("OnEvent", function()
     previewOpenedBar = false;
 end);
 
-function MBB_SetPositions()
-    if MBB_MinimapButtonFrame.SetIgnoreParentScale then
-        MBB_MinimapButtonFrame:SetIgnoreParentScale(true);
+local function MBB_GetLayoutScale(button, scale)
+    -- MUI scales Minimap itself. Match its buttons to normal UIParent units.
+    if not _G.MayronUI then return scale; end
+    local parent = button:GetParent();
+    if not parent then return scale; end
+    local parentScale = parent:GetEffectiveScale();
+    if button.IsIgnoringParentScale and button:IsIgnoringParentScale() then
+        parentScale = 1;
     end
+    if not parentScale or parentScale <= 0 then return scale; end
+    return scale * UIParent:GetEffectiveScale() / parentScale;
+end
+
+function MBB_SetPositions()
 	MBB_ButtonOrder_ApplyToCollected();
-	MBB_MinimapButtonFrame:SetScale(previewButtonScale or MBB_Options.ButtonScale or 1.0);
+	MBB_MinimapButtonFrame:SetScale(MBB_GetLayoutScale(MBB_MinimapButtonFrame, previewButtonScale or MBB_Options.ButtonScale or 1.0));
 	local directions = {
 		[1] = {"RIGHT", "LEFT"},
 		[2] = {"BOTTOM", "TOP"},
@@ -2220,7 +2222,7 @@ function MBB_SetPositions()
 		if( positionframe.isvisible and positionframe.parentisvisible ) then
 			-- Apply user-selected button scale while preserving each addon button's original scale.
 			local baseScale = positionframe.oscale or 1
-			positionframe:SetScale(baseScale * (previewButtonScale or MBB_Options.ButtonScale or 1.0));
+			positionframe:SetScale(MBB_GetLayoutScale(positionframe, baseScale * (previewButtonScale or MBB_Options.ButtonScale or 1.0)));
 
 			local parent;
 			if( parentid==0 ) then

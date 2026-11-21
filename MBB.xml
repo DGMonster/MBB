@@ -12,7 +12,7 @@
 	</Frame>
 	<Button name="MBB_MinimapButtonFrame" parent="Minimap" toplevel="true" movable="true" frameStrata="MEDIUM" enableMouse="true">
 		<Size>
-			<AbsDimension x="33" y="33" />
+			<AbsDimension x="31" y="31" />
 		</Size>
 		<Anchors>
 			<Anchor point="TOPLEFT">
@@ -25,7 +25,7 @@
 			<Layer level="BACKGROUND">
 				<Texture name="$parent_Texture" file="Interface\AddOns\MBB\Textures\MiniLogo">
 					<Size>
-						<AbsDimension x="22" y="22" />
+						<AbsDimension x="20" y="20" />
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT">
@@ -40,7 +40,7 @@
 			<Layer level="OVERLAY">
 				<Texture file="Interface\Minimap\MiniMap-TrackingBorder">
 					<Size>
-						<AbsDimension x="56" y="56" />
+						<AbsDimension x="53" y="53" />
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT" />
@@ -817,7 +817,7 @@
     </Scripts>
 </Button>
 
-<Slider name="$parent_ButtonScaleSlider" inherits="OptionsSliderTemplate" minValue="0.75" maxValue="1.50" valueStep="0.05" defaultValue="1.0" obeyStepOnDrag="true">
+<Slider name="$parent_ButtonScaleSlider" inherits="OptionsSliderTemplate" minValue="0.50" maxValue="1.50" valueStep="0.05" defaultValue="1.0" obeyStepOnDrag="true">
     <Size><AbsDimension x="180" y="17" /></Size>
     <Anchors>
         <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="185" y="-104" /></Offset></Anchor>
@@ -835,10 +835,10 @@
     </Layers>
     <Scripts>
         <OnLoad>
-            self:SetMinMaxValues(0.75, 1.50);
+            self:SetMinMaxValues(0.50, 1.50);
             self:SetValueStep(0.05);
             if self.SetObeyStepOnDrag then self:SetObeyStepOnDrag(true); end
-            _G[self:GetName().."Low"]:SetText("75%");
+            _G[self:GetName().."Low"]:SetText("50%");
             _G[self:GetName().."High"]:SetText("150%");
         </OnLoad>
         <OnShow>

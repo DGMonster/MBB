@@ -1,5 +1,28 @@
 # Changelog
 
+## v2.0.8-rc
+
+### English
+
+- Fix a scaling regression introduced in 2.0.7-rc: the MBB launcher and collected buttons once again inherit normal parent/UI scaling. This addresses oversized buttons and minimap alignment changes with UI scale below 100%.
+- Compensate for MUI minimap scaling while retaining global UI scaling, including buttons with different parent frames.
+- Extend the button-size slider to 50–150%.
+- Keep the live size preview and its OK/Cancel behavior.
+- MUI Reborn 1.0.11-rc continues to skip its extra addon-button scaling when MBB is active.
+
+Regression checks cover inherited scales, preview/cancel, combat-deferred cleanup and the new slider range. Live cross-client confirmation is pending.
+
+### Deutsch
+
+- Skalierungsfehler aus 2.0.7-rc korrigiert: MBB-Hauptbutton und eingesammelte Buttons erben wieder die normale Eltern- und UI-Skalierung. Das behebt die Ursache für zu große Buttons und veränderte Minimap-Ausrichtung bei UI-Skalierung unter 100%.
+- MUI-Minimap-Skalierung wird unter Beibehaltung der globalen UI-Skalierung ausgeglichen, auch bei Buttons mit unterschiedlichen Elternrahmen.
+- Größenregler auf 50–150% erweitert.
+- Live-Größenvorschau und Übernehmen/Abbrechen bleiben verfügbar.
+- MUI Reborn 1.0.11-rc setzt seine zusätzliche Addon-Button-Skalierung bei aktivem MBB weiterhin aus.
+
+Regressionstests prüfen geerbte Skalierung, Vorschau/Abbrechen, Zurücksetzen nach Kampfende und den neuen Größenbereich. Die Bestätigung auf allen Clients im Spiel steht noch aus.
+
+
 ## v2.0.7-rc
 
 ### English
