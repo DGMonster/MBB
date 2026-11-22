@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.8-rc"
+local sourceVersion = "v2.0.9-rc"
 
 -- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the
@@ -2095,15 +2095,49 @@ local function MBB_GetAlphabeticalButtonKey(name)
 end
 
 local previewButtonScale;
+local previewPoints, previewCenter;
 local previewOpenedBar = false;
 local previewRestorePending = false;
 
+local function MBB_RestorePreviewPosition()
+    if previewPoints then
+        MBB_MinimapButtonFrame:ClearAllPoints();
+        for _, point in ipairs(previewPoints) do
+            MBB_MinimapButtonFrame:SetPoint(unpack(point, 1, 5));
+        end
+    end
+    previewPoints, previewCenter = nil, nil;
+end
+
+function MBB_CommitButtonScalePreview()
+    if not previewButtonScale or InCombatLockdown() then return end
+    local point, _, _, x, y = MBB_MinimapButtonFrame:GetPoint(1);
+    if point then
+        MBB_Options.ButtonPos = {x, y};
+        if MBB_Options.AttachToMinimap ~= 1 then MBB_Options.DetachedButtonPos = point; end
+    end
+    previewButtonScale = nil;
+    previewPoints, previewCenter = nil, nil;
+    if previewOpenedBar then MBB_HideButtons(); end
+    previewOpenedBar = false;
+end
 function MBB_PreviewButtonScale(value)
     if not MBB_Options or not MBB_OptionsFrame or not MBB_OptionsFrame:IsShown() then return end
     if InCombatLockdown() then return end
     if type(value) ~= "number" then return end
     value = math.max(0.50, math.min(1.50, value));
     if not previewButtonScale and math.abs(value - (MBB_Options.ButtonScale or 1)) < 0.001 then return end
+    if not previewPoints then
+        previewPoints = {};
+        for index = 1, MBB_MinimapButtonFrame:GetNumPoints() do
+            previewPoints[index] = {MBB_MinimapButtonFrame:GetPoint(index)};
+        end
+        local x, y = MBB_MinimapButtonFrame:GetCenter();
+        if x and y then
+            local scale = MBB_MinimapButtonFrame:GetEffectiveScale();
+            previewCenter = {x * scale, y * scale};
+        end
+    end
     previewButtonScale = value;
     MBB_SetPositions();
     if MBB_IsShown == 0 then
@@ -2120,6 +2154,7 @@ function MBB_ClearButtonScalePreview()
         return;
     end
     MBB_SetPositions();
+    MBB_RestorePreviewPosition();
     if previewOpenedBar then MBB_HideButtons(); end
     previewOpenedBar = false;
 end
@@ -2130,6 +2165,7 @@ previewEvents:SetScript("OnEvent", function()
     if not previewRestorePending then return end
     previewRestorePending = false;
     MBB_SetPositions();
+    MBB_RestorePreviewPosition();
     if previewOpenedBar then MBB_HideButtons(); end
     previewOpenedBar = false;
 end);
@@ -2150,6 +2186,23 @@ end
 function MBB_SetPositions()
 	MBB_ButtonOrder_ApplyToCollected();
 	MBB_MinimapButtonFrame:SetScale(MBB_GetLayoutScale(MBB_MinimapButtonFrame, previewButtonScale or MBB_Options.ButtonScale or 1.0));
+    if previewButtonScale and previewCenter then
+        local x, y = MBB_MinimapButtonFrame:GetCenter();
+        local scale = MBB_MinimapButtonFrame:GetEffectiveScale();
+        if x and y and scale > 0 then
+            local dx = (previewCenter[1] - x * scale) / scale;
+            local dy = (previewCenter[2] - y * scale) / scale;
+            local points = {};
+            for index = 1, MBB_MinimapButtonFrame:GetNumPoints() do
+                points[index] = {MBB_MinimapButtonFrame:GetPoint(index)};
+            end
+            MBB_MinimapButtonFrame:ClearAllPoints();
+            for _, point in ipairs(points) do
+                MBB_MinimapButtonFrame:SetPoint(point[1], point[2], point[3],
+                    (point[4] or 0) + dx, (point[5] or 0) + dy);
+            end
+        end
+    end
 	local directions = {
 		[1] = {"RIGHT", "LEFT"},
 		[2] = {"BOTTOM", "TOP"},

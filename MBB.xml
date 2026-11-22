@@ -25,12 +25,12 @@
 			<Layer level="BACKGROUND">
 				<Texture name="$parent_Texture" file="Interface\AddOns\MBB\Textures\MiniLogo">
 					<Size>
-						<AbsDimension x="20" y="20" />
+						<AbsDimension x="22" y="22" />
 					</Size>
 					<Anchors>
 						<Anchor point="TOPLEFT">
 							<Offset>
-								<AbsDimension x="6" y="-6" />
+								<AbsDimension x="5" y="-5" />
 							</Offset>
 						</Anchor>
 					</Anchors>
@@ -973,7 +973,8 @@
 				</Anchors>
 				<Scripts>
 					<OnClick>
-						MBB_OptionsFrame:Hide();
+						MBB_CommitButtonScalePreview();
+                        MBB_OptionsFrame:Hide();
 						MBB_Options.CollapseTimeout = MBB_OptionsFrame_TimeoutSlider:GetValue();
 						if( MBB_OptionsFrame_LeftRadio:GetChecked() ) then
 							MBB_Options.ExpandDirection = 1;

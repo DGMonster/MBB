@@ -1,5 +1,17 @@
 # Changelog
 
+## v2.0.9-rc
+
+### English
+
+- Keep the launcher centered at its current screen position while adjusting button size.
+- Save the matching position when confirming with OK. Cancel restores the original size and anchors, including cleanup deferred until combat ends.
+
+### Deutsch
+
+- Der Hauptbutton bleibt beim Ändern der Button-Größe an seiner Bildschirmposition zentriert.
+- OK speichert die passende Position mit. Abbrechen stellt Größe und ursprüngliche Anker wieder her, auch bei verzögertem Zurücksetzen nach Kampfende.
+
 ## v2.0.8-rc
 
 ### English
