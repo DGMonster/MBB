@@ -928,6 +928,18 @@
 </CheckButton>
 
 
+<CheckButton name="$parent_ClickSound" inherits="UICheckButtonTemplate">
+    <Size><AbsDimension x="24" y="24" /></Size>
+    <Anchors>
+        <Anchor point="TOPLEFT" relativeTo="$parent"><Offset><AbsDimension x="248" y="-34" /></Offset></Anchor>
+    </Anchors>
+    <Scripts>
+        <OnLoad>
+            self.Text:SetText(GetLocale() == "deDE" and "Sound beim Öffnen und Schließen" or "Sound when opening and closing");
+        </OnLoad>
+        <OnShow>self:SetChecked(MBB_Options.ClickSound == true);</OnShow>
+    </Scripts>
+</CheckButton>
 <Button name="$parent_ManagerButton" inherits="UIPanelButtonTemplate" text="MBB_MANAGER_BUTTON">
     <Size>
         <AbsDimension x="190" y="23" />
@@ -975,7 +987,8 @@
 					<OnClick>
 						MBB_CommitButtonScalePreview();
                         MBB_OptionsFrame:Hide();
-						MBB_Options.CollapseTimeout = MBB_OptionsFrame_TimeoutSlider:GetValue();
+						MBB_Options.ClickSound = MBB_OptionsFrame_ClickSound:GetChecked() and true or false;
+                        MBB_Options.CollapseTimeout = MBB_OptionsFrame_TimeoutSlider:GetValue();
 						if( MBB_OptionsFrame_LeftRadio:GetChecked() ) then
 							MBB_Options.ExpandDirection = 1;
 						elseif( MBB_OptionsFrame_TopRadio:GetChecked() ) then

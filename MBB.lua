@@ -71,6 +71,7 @@ MBB_DefaultOptions = {
 	["MaxButtonsPerLine"] = 0,
 	["AltExpandDirection"] = 4,
 	["ButtonScale"] = 1.0,
+    ["ClickSound"] = false,
 	["ManualButtonOrder"] = 1,
 	["PinnedButtons"] = {},
 	["ReverseAlphabeticalOrder"] = 0,
@@ -2142,7 +2143,7 @@ function MBB_PreviewButtonScale(value)
     MBB_SetPositions();
     if MBB_IsShown == 0 then
         previewOpenedBar = true;
-        MBB_OnClick("LeftButton");
+        MBB_OnClick("LeftButton", true);
     end
 end
 
@@ -2324,13 +2325,13 @@ function MBB_SetPositions()
 	end
 end
 
-function MBB_OnClick(arg1)
+function MBB_OnClick(arg1, silent)
     if arg1 == "MiddleButton" then
         if keepBarOpen then
             SetBarHeld(false);
             MBB_ShowTimeout = 0;
         else
-            if MBB_IsShown == 0 then MBB_OnClick("LeftButton"); end
+            if MBB_IsShown == 0 then MBB_OnClick("LeftButton", true); end
             SetBarHeld(true);
         end
         return;
@@ -2350,6 +2351,11 @@ function MBB_OnClick(arg1)
 	elseif( arg1 and arg1 == "RightButton" ) then
 		if MBB_OpenOptions then MBB_OpenOptions(); else MBB_OptionsFrame:Show(); end
 	else
+        if (arg1 == "LeftButton" and not silent and not previewButtonScale and
+            MBB_Options.ClickSound == true and type(PlaySoundFile) == "function") then
+            local soundFile = MBB_IsShown == 1 and "Close.wav" or "Open.wav";
+            PlaySoundFile("Interface\\AddOns\\MBB\\Sounds\\" .. soundFile, "SFX");
+        end
 		if( MBB_IsShown == 1 ) then
 			MBB_HideButtons();
 		else
@@ -2460,11 +2466,31 @@ function MBB_isButtonToBeIncluded(name)
 	end
 end
 
+-- Avoid returning a large child list through Lua's limited value stack.
+local enumerateChildren = setmetatable({}, { __mode = "k" });
+local function MBB_GetChildren(parent)
+    if (not parent) then return {}; end
+    if (not enumerateChildren[parent] and parent:GetNumChildren() <= 200) then
+        local ok, children = pcall(function() return {parent:GetChildren()}; end);
+        if (ok) then return children; end
+    end
+    enumerateChildren[parent] = true;
+    local children = {};
+    local frame = EnumerateFrames();
+    while (frame) do
+        if (not frame:IsForbidden() and frame:GetParent() == parent) then
+            children[#children + 1] = frame;
+        end
+        frame = EnumerateFrames(frame);
+    end
+    return children;
+end
+
 function MBB_OnUpdate(elapsed)
 	if( MBB_CheckTime >= 3 ) then
 		MBB_CheckTime = 0;
 		
-		local children = {Minimap:GetChildren()};
+		local children = MBB_GetChildren(Minimap);
 		for _, child in ipairs(children) do
 			if( child:GetName() and not child.oshow and ((child:HasScript("OnClick") and not MBB_IsKnownButton(child:GetName(), 3)) or (MBB_isButtonToBeIncluded(child:GetName()))) ) then
 				MBB_PrepareButton(child:GetName());
@@ -2508,7 +2534,7 @@ function MBB_Rescan()
 	end
 
 	local added = 0
-	local children = { Minimap:GetChildren() }
+	local children = MBB_GetChildren(Minimap)
 
 	for _, child in ipairs(children) do
 		local name = child:GetName()
@@ -2842,7 +2868,7 @@ function MBB_Debug(msg)
 end
 
 function MBB_Test()
-	local children = {Minimap:GetChildren()};
+	local children = MBB_GetChildren(Minimap);
 	for _, child in ipairs(children) do
 		if( child:GetName() and not MBB_IsKnownButton(child:GetName()) ) then
 			ChatFrame1:AddMessage(child:GetName());
@@ -2926,8 +2952,8 @@ end
 
 -- This looks to be used for testing only.
 function MBB_NotSureIfThisIsNeeded()
-	local children = {Minimap:GetChildren()};
-	local additional = {MinimapBackdrop:GetChildren()};
+	local children = MBB_GetChildren(Minimap);
+	local additional = MBB_GetChildren(MinimapBackdrop);
 	for _,child in ipairs(additional) do
 		table.insert(children, child);
 	end
@@ -2949,7 +2975,7 @@ function MBB_NotSureIfThisIsNeeded()
 			end
 			if( not ignore ) then
 				if( not child:HasScript("OnClick") ) then
-					for _,subchild in ipairs({child:GetChildren()}) do
+					for _,subchild in ipairs(MBB_GetChildren(child)) do
 						if( subchild:HasScript("OnClick") ) then
 							child = subchild;
 							child.hasParentFrame = true;

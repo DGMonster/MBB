@@ -1,5 +1,19 @@
 # Changelog
 
+## Unreleased / Noch nicht veröffentlicht
+
+### English
+
+- Avoid stack overflow while scanning minimap frames when a large number of child frames is present.
+- Add optional custom tick/tock sounds when manually opening and closing the button bar. Disabled by default and controlled by WoW's Sound Effects volume.
+- Automatic hiding and the size preview remain silent.
+
+### Deutsch
+
+- Stack-Overflow beim Scannen der Minimap mit sehr vielen untergeordneten Frames abgefangen.
+- Optionale eigene Tick/Tock-Sounds beim manuellen Öffnen und Schließen der Button-Leiste hinzugefügt. Standardmäßig deaktiviert; die Lautstärke folgt WoWs Soundeffekten.
+- Automatisches Ausblenden und die Größenvorschau bleiben lautlos.
+
 ## v2.0.9-rc
 
 ### English
