@@ -18,7 +18,7 @@ local function MBB_GetMetadata(field)
 end
 
 local rawVersion = MBB_GetMetadata("Version")
-local sourceVersion = "v2.0.10-rc"
+local sourceVersion = "v2.0.11-rc"
 
 -- Read the version from TOC metadata when available. When the addon is
 -- installed directly from the source tree, do not accidentally read the
@@ -2466,28 +2466,59 @@ function MBB_isButtonToBeIncluded(name)
 	end
 end
 
--- Avoid returning a large child list through Lua's limited value stack.
-local enumerateChildren = setmetatable({}, { __mode = "k" });
+-- Query only the requested parent. Never enumerate unrelated UI/nameplate frames.
+local childScanCache = setmetatable({}, { __mode = "k" });
+local function MBB_ReadChildren(parent)
+    return {parent:GetChildren()};
+end
 local function MBB_GetChildren(parent)
-    if (not parent) then return {}; end
-    if (not enumerateChildren[parent] and parent:GetNumChildren() <= 200) then
-        local ok, children = pcall(function() return {parent:GetChildren()}; end);
-        if (ok) then return children; end
-    end
-    enumerateChildren[parent] = true;
     local children = {};
-    local frame = EnumerateFrames();
-    while (frame) do
-        if (not frame:IsForbidden() and frame:GetParent() == parent) then
-            children[#children + 1] = frame;
+    if (not parent or InCombatLockdown()) then return children; end
+    local cached = childScanCache[parent];
+    if (not cached or GetTime() >= cached.retryAt) then
+        local ok, result = pcall(MBB_ReadChildren, parent);
+        if (ok) then
+            childScanCache[parent] = nil;
+            return result;
         end
-        frame = EnumerateFrames(frame);
+        cached = cached or { children = {} };
+        cached.retryAt = GetTime() + 30;
+        childScanCache[parent] = cached;
     end
-    return children;
+    -- A native child-list overflow must not disable registered addon buttons.
+    -- Each known frame is checked in isolation; a blocked frame is skipped.
+    local seen = {};
+    local function AddKnown(button)
+        if (button and not seen[button] and not button:IsForbidden() and
+            button:GetParent() == parent) then
+            seen[button] = true;
+            children[#children + 1] = button;
+        end
+    end
+    for _, button in ipairs(cached.children) do pcall(AddKnown, button); end
+    for _, name in ipairs(MBB_Buttons or {}) do pcall(AddKnown, _G[name]); end
+    for _, name in ipairs(MBB_Exclude or {}) do pcall(AddKnown, _G[name]); end
+    for _, name in ipairs(MBB_Include or {}) do pcall(AddKnown, _G[name]); end
+    if (LibStub) then
+        local ok, icons = pcall(LibStub, "LibDBIcon-1.0", true);
+        if (ok and icons) then
+            local function AddRegistered()
+                for _, name in ipairs(icons:GetButtonList()) do
+                    pcall(AddKnown, icons:GetMinimapButton(name));
+                end
+            end
+            pcall(AddRegistered);
+        end
+    end
+    cached.children = children;
+    -- Return a separate list: legacy diagnostic callers append to their copy.
+    local result = {};
+    for index, button in ipairs(children) do result[index] = button; end
+    return result;
 end
 
 function MBB_OnUpdate(elapsed)
-	if( MBB_CheckTime >= 3 ) then
+	if( MBB_CheckTime >= 3 and not InCombatLockdown() ) then
 		MBB_CheckTime = 0;
 		
 		local children = MBB_GetChildren(Minimap);

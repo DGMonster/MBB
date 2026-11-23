@@ -1,5 +1,19 @@
 # Changelog
 
+## v2.0.11-rc
+
+### English
+
+- Remove the global UI-frame scan introduced in 2.0.10-rc, which could access blocked nameplate frames and cause extra CPU load.
+- Guard direct minimap child-list reads. If a read fails, use known or LibDBIcon-registered buttons and retry after 30 seconds.
+- Defer new button discovery until combat ends.
+
+### Deutsch
+
+- Die mit 2.0.10-rc eingeführte globale UI-Frame-Suche entfernt, die auf gesperrte Namensleisten-Frames zugreifen und zusätzliche CPU-Last verursachen konnte.
+- Direkte Minimap-Abfragen abgesichert. Bei einem Fehlschlag werden bekannte oder bei LibDBIcon registrierte Buttons verwendet; nach 30 Sekunden wird erneut versucht.
+- Neue Buttons werden erst außerhalb des Kampfes eingesammelt.
+
 ## v2.0.10-rc
 
 ### English
