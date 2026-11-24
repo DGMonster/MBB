@@ -1,0 +1,149 @@
+{
+  "name": "Bug report",
+  "description": "Report a problem with MinimapButtonBag Reborn",
+  "title": "[Bug]: ",
+  "labels": [
+    "bug"
+  ],
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Thank you for helping improve MBB Reborn! Please include the exact addon version. You can find it in MBB settings or with `/mbb about`. English and German reports are welcome."
+      }
+    },
+    {
+      "type": "input",
+      "id": "mbb-version",
+      "attributes": {
+        "label": "MBB Reborn version",
+        "description": "Enter the exact version, including any rc suffix.",
+        "placeholder": "Example: 2.0.11-rc"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "dropdown",
+      "id": "wow-client",
+      "attributes": {
+        "label": "World of Warcraft client",
+        "options": [
+          "Retail",
+          "WoW Forever",
+          "Classic Era",
+          "TBC Classic",
+          "MoP Classic"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "input",
+      "id": "wow-version",
+      "attributes": {
+        "label": "World of Warcraft version",
+        "description": "Enter the game version/build shown by your client.",
+        "placeholder": "Game version and build number"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "problem",
+      "attributes": {
+        "label": "What happened?",
+        "description": "Describe the problem and where it occurs, including whether you were in combat or inside an instance."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "expected-behavior",
+      "attributes": {
+        "label": "Expected behavior",
+        "description": "What did you expect to happen?"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "reproduction",
+      "attributes": {
+        "label": "Steps to reproduce",
+        "description": "Describe the steps. If it happens intermittently, say so.",
+        "placeholder": "1. Open ...\n2. Click ...\n3. The problem appears"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "lua-error",
+      "attributes": {
+        "label": "Complete Lua error",
+        "description": "Paste the full error, including stack trace and locals, if available. You can enable errors with /console scriptErrors 1 followed by /reload.",
+        "render": "text"
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "button-settings",
+      "attributes": {
+        "label": "Button settings",
+        "description": "If relevant: attached/detached, size, expansion direction, pinned buttons, or the affected button name."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "other-addons",
+      "attributes": {
+        "label": "Other active addons",
+        "description": "List relevant addons and their versions, especially minimap, nameplate and UI addons. Mention any test with other addons disabled if you have done one."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "screenshots",
+      "attributes": {
+        "label": "Screenshots",
+        "description": "Drag screenshots into this field if they help show the problem."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "additional-information",
+      "attributes": {
+        "label": "Additional information",
+        "description": "Did it work in an earlier MBB version? Include that version and any workaround you found."
+      }
+    },
+    {
+      "type": "checkboxes",
+      "id": "confirmation",
+      "attributes": {
+        "label": "Confirmation",
+        "options": [
+          {
+            "label": "I tested the problem with the latest available version of MBB Reborn.",
+            "required": true
+          },
+          {
+            "label": "I searched the existing issues and did not find the same problem.",
+            "required": true
+          }
+        ]
+      }
+    }
+  ]
+}

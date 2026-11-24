@@ -1,0 +1,97 @@
+{
+  "name": "Feature request",
+  "description": "Suggest a feature or improvement for MBB Reborn",
+  "title": "[Feature]: ",
+  "labels": [
+    "enhancement"
+  ],
+  "body": [
+    {
+      "type": "markdown",
+      "attributes": {
+        "value": "Tell us what you would like to improve and how it would help. English and German suggestions are welcome."
+      }
+    },
+    {
+      "type": "input",
+      "id": "mbb-version",
+      "attributes": {
+        "label": "MBB Reborn version",
+        "description": "Find your installed version with /mbb about.",
+        "placeholder": "Example: 2.0.11-rc"
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "dropdown",
+      "id": "wow-client",
+      "attributes": {
+        "label": "World of Warcraft client",
+        "options": [
+          "Retail",
+          "WoW Forever",
+          "Classic Era",
+          "TBC Classic",
+          "MoP Classic",
+          "All supported clients"
+        ]
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "use-case",
+      "attributes": {
+        "label": "What would you like to improve?",
+        "description": "Describe the situation or limitation you encounter."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "suggestion",
+      "attributes": {
+        "label": "Proposed solution",
+        "description": "Describe how you would like the feature to work."
+      },
+      "validations": {
+        "required": true
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "alternatives",
+      "attributes": {
+        "label": "Alternatives considered",
+        "description": "Describe any workaround or alternative you have tried."
+      }
+    },
+    {
+      "type": "textarea",
+      "id": "additional-information",
+      "attributes": {
+        "label": "Additional information",
+        "description": "Add examples, mockups or screenshots if helpful."
+      }
+    },
+    {
+      "type": "checkboxes",
+      "id": "confirmation",
+      "attributes": {
+        "label": "Confirmation",
+        "options": [
+          {
+            "label": "I searched the existing issues and did not find the same request.",
+            "required": true
+          }
+        ]
+      }
+    }
+  ]
+}
