@@ -46,6 +46,7 @@ MBB_DebugInfo = {};
 MBB_DragFlag = 0;
 MBB_ShowTimeout = -1;
 MBB_CheckTime = 0;
+MBB_LastChildCount = -1;
 MBB_IsShown = 0;
 MBB_FuBar_MinimapContainer = "FuBarPlugin-MinimapContainer-2.0";
 
@@ -2521,13 +2522,20 @@ function MBB_OnUpdate(elapsed)
 	if( MBB_CheckTime >= 3 and not InCombatLockdown() ) then
 		MBB_CheckTime = 0;
 		
-		local children = MBB_GetChildren(Minimap);
-		for _, child in ipairs(children) do
-			if( child:GetName() and not child.oshow and ((child:HasScript("OnClick") and not MBB_IsKnownButton(child:GetName(), 3)) or (MBB_isButtonToBeIncluded(child:GetName()))) ) then
-				MBB_PrepareButton(child:GetName());
-				if( not MBB_IsInArray(MBB_Exclude, child:GetName()) ) then
-					MBB_AddButton(child:GetName());
-					MBB_SetPositions();
+		-- Only walk the child list when the number of minimap children changed.
+		-- Map-pin addons can parent 1000+ frames to the minimap, and reading
+		-- them all every 3 seconds causes a periodic frame hitch.
+		local childCount = Minimap:GetNumChildren();
+		if( childCount ~= MBB_LastChildCount ) then
+			MBB_LastChildCount = childCount;
+			local children = MBB_GetChildren(Minimap);
+			for _, child in ipairs(children) do
+				if( child:GetName() and not child.oshow and ((child:HasScript("OnClick") and not MBB_IsKnownButton(child:GetName(), 3)) or (MBB_isButtonToBeIncluded(child:GetName()))) ) then
+					MBB_PrepareButton(child:GetName());
+					if( not MBB_IsInArray(MBB_Exclude, child:GetName()) ) then
+						MBB_AddButton(child:GetName());
+						MBB_SetPositions();
+					end
 				end
 			end
 		end
